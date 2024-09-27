@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 17:40:59 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/09/26 18:50:02 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/09/27 14:45:33 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,13 +24,13 @@ int main(int ac, char **av)
 		return (0);
 	}
 
-	int	ip = std::atoi(av[1]);
+	int	port = std::atoi(av[1]);
 
 	int serv_socket = socket(AF_INET, SOCK_STREAM, 0);
 
 	sockaddr_in serverAddress;
     serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(ip);
+    serverAddress.sin_port = htons(port);
     serverAddress.sin_addr.s_addr = INADDR_ANY;
 
 	bind(serv_socket, (struct sockaddr*)&serverAddress,
