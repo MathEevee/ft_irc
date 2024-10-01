@@ -6,16 +6,22 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 17:40:59 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/09/30 15:48:15 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/01 17:13:22 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <cstring>
 #include <iostream>
+#include <iomanip>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <cstdlib>
+#include <csignal>
 #include "server.hpp"
+
+void	handler(int num)
+{}
 
 int main(int ac, char **av)
 {
@@ -24,13 +30,9 @@ int main(int ac, char **av)
 		std::cout << "Bad argument" << std::endl;
 		return (0);
 	}
-	
-	Server	serv(std::atoi(av[1]));
-
-
-    // closing the socket.
+	signal(SIGINT, handler);
+	Server	serv(std::atoi(av[1]), av[2]);
     close(serv.getServSocket());
-	// close(serv_socket);
 }
 
 // int main()
