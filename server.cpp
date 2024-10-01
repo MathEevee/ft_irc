@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/09/30 17:47:04 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/09/30 18:38:49 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,10 +68,10 @@ void	Server::read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_cl
 				size = recv(fds[i].fd, buffer, sizeof(buffer) - 1, 0);
 				buffer[size] = 0;
 				message = message + buffer;
+				std::cout << "test : |" << buffer << "|" << std::endl;
 			} while (size == 1024);
 			//parsing commande
 			std::cout << "client : " << fds[i].fd << " message : " << message << std::endl;
-			message = "";
 		}
 		else if ((fds[i].revents & POLLHUP) != 0)
 		{}
