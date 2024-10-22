@@ -6,11 +6,23 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/22 17:16:10 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/22 19:02:07 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+
+std::vector<std::string>	splitCommand(std::string input)
+{
+	// std::vector<std::string> _tab;
+
+	// for (input.find(" ") != std::string::npos)
+	// {
+		
+	// }
+
+	// return (_tab);
+}
 
 void	Server::runtime()
 {
@@ -47,7 +59,17 @@ void	Server::initialize_poll_fds(struct pollfd fds[NB_MAX_CLIENTS + 1])
 	}
 }
 
-// Add a client to the server list
+Client*		Server::findClientByNick(std::string recipient)
+{
+	for (std::vector<Client>::iterator it = this->_client_list.begin(); it != this->_client_list.end(); it++)
+	{
+		if (it->getNickname() == recipient)
+			return (&(*it));
+	}
+	return (NULL);
+}
+
+
 bool	Server::add_client()
 {
 	int clientSocket = accept(this->getServerSocket(), NULL, NULL);
@@ -102,7 +124,6 @@ void	Server::read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_cl
 	}
 }
 
-// 
 bool	Server::process_commands(Client &client)
 {
 	std::string message;
@@ -119,29 +140,27 @@ bool	Server::process_commands(Client &client)
 	return (true);
 }
 
-// Parse and execute the command based on the first word
 void	Server::commands_parsing(Client &client, std::string input)
 {
-	bool		result;
-	std::string	command;
-	// size_t		command_len;
+	bool						result;
+	std::vector<std::string>	list_arg;
 
 	result = false;
-	// command_len = input.find(' ');
-	command = input.substr(0, input.find(' '));
-	std::cout << "command : " << command << std::endl;
-	if (input.find(' ') ==  std::string::npos)
-		return ;
-	if (command == "PASS")
-		result = checkPass(client, input.substr(input.find(' ') + 1));
-	//add checkpoint connection for PASS, not connected send error & stop 
-	if (command == "USER")
-		result = checkUser(client, input.substr(input.find(' ') + 1));
-	//add checkpoint to check user initialized, not initialized send error & stop
-	if (command == "PRIVMSG")
-		result = checkPrivmsg(client, input.substr(input.find(' ') + 1));
+	list_arg = splitCommand(input);
+	// command = input.substr(0, input.find(' '));
+	// std::cout << "command : " << command << std::endl;
+	// if (input.find(' ') ==  std::string::npos)
+	// 	return ;
+	// if (command == "PASS")
+	// 	result = checkPass(client, input.substr(input.find(' ') + 1));
+	// //add checkpoint connection for PASS, not connected send error & stop
+	// if (command == "USER")
+	// 	result = checkUser(client, input.substr(input.find(' ') + 1));
+	// //add checkpoint to check user initialized, not initialized send error & stop
+	// if (command == "PRIVMSG")
+	// 	result = checkPrivmsg(client, input.substr(input.find(' ') + 1));
 
-	(void) result; // how do u want to use this variable?
+	(void) result;
 }
 
 void	Server::sendToAll(Client &client)

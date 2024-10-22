@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 18:36:54 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/22 17:12:58 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/22 17:44:25 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ class Client
 		std::string	_nickname;
 		int			_status;
 		int			_socket_fd;
-		std::string	_message_buffer; // data send to the server
+		std::string	_message_buffer;
 		bool		_disconnected;
 
 	public :

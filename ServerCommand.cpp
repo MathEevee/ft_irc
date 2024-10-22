@@ -6,20 +6,19 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/10/22 17:16:44 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/22 18:36:09 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-// Check is the provide password is the good password
 bool	Server::checkPass(Client &client, std::string password)
 {
 	std::cout << "|" << password << "|"  << std::endl;
 	if (this->getPassword() == password && client.getStatus() == 0)
 	{
 		std::cout << "Client authentificated." << std::endl;
-		std::string client_msg = ":" + _name + ": Your are authentificated." + "\r\n";
+		std::string client_msg = ":127.0.0.1: Your are authentificated.\r\n";
 		send(client.getSocketFd(), client_msg.c_str(), client_msg.size(), 0);
 		client.setStatus(1);
 		return (true);
@@ -89,7 +88,6 @@ bool	Server::checkUser(Client& client, std::string data)
 }
 
 
-// PRIV <nickname> <message>
 bool	Server::checkPrivmsg(Client &client, std::string data)
 {
 	std::string recipient = data.substr(0, data.find(' '));

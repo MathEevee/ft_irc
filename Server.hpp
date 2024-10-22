@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:25:59 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/22 17:16:28 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/22 18:41:03 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,10 @@
 # include "Client.hpp"
 # include <cstring>
 # include <iostream>
+# include <vector>
 # include <netinet/in.h>
 # include <sys/socket.h>
 # include <unistd.h>
-# include <vector>
 # include <poll.h>
 # include <algorithm>
 # include <csignal>
@@ -58,6 +58,8 @@ class Server
 
 	public :
 		void		commands_parsing(Client &client, std::string commande);
+
+		Client*		findClientByNick(std::string recipient);
 		
 		Server(int port, std::string password);
 		~Server();
