@@ -6,22 +6,45 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/22 19:02:07 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/23 17:57:51 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-std::vector<std::string>	splitCommand(std::string input)
+void	Server::connexionFull(void)
 {
-	// std::vector<std::string> _tab;
+	
+}
 
-	// for (input.find(" ") != std::string::npos)
-	// {
-		
-	// }
+std::deque<std::string>	splitCommand(std::string input)
+{
+	std::deque<std::string>		tab;
+	std::string					arg;
+	bool						end_command = false;
 
-	// return (_tab);
+	for (std::string::iterator it = input.begin(); it != input.end(); it++)
+	{
+		if (*it == ' ' && end_command == false)
+		{
+			if (arg.size() != 0)
+			{
+				tab.push_back(arg);
+				arg = "";
+			}
+		}
+		else if (*it == ':')
+			end_command = true;
+		if (*it != ' ' || end_command == true)
+			arg += *it;
+	}
+	if (arg.size() != 0)
+	{
+		if (arg[arg.size()] == '\r')
+			arg = arg.substr(0, arg.size() - 1);
+		tab.push_back(arg);
+	}
+	return (tab);
 }
 
 void	Server::runtime()
@@ -100,6 +123,7 @@ void	Server::read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_cl
 	for (std::vector<Client>::iterator it = this->_client_list.begin(); it != this->_client_list.end() - new_client;)
 	{
 		std::string	message = it->getMessage();
+
 		if ((fds[i].revents & POLLIN) != 0)
 		{
 			do
@@ -114,9 +138,11 @@ void	Server::read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_cl
 				message = message + buffer;
 				it->setMessage(message);
 			} while (size == 1024);
+
 			this->process_commands(*it);
 			i++;
 		}
+
 		if ((*it).getDisconnected() == false)
 			it++;
 		else
@@ -134,7 +160,6 @@ bool	Server::process_commands(Client &client)
 		std::string command = message.substr(0, message.find("\n"));
 		message = message.substr(message.find("\n") + 1);
 		client.setMessage(message);
-		std::cout << "command in proccess commands " << command << std::endl;
 		commands_parsing(client, command);
 	}
 	return (true);
@@ -142,25 +167,17 @@ bool	Server::process_commands(Client &client)
 
 void	Server::commands_parsing(Client &client, std::string input)
 {
-	bool						result;
-	std::vector<std::string>	list_arg;
+	std::deque<std::string>		list_arg;
 
-	result = false;
 	list_arg = splitCommand(input);
-	// command = input.substr(0, input.find(' '));
-	// std::cout << "command : " << command << std::endl;
-	// if (input.find(' ') ==  std::string::npos)
-	// 	return ;
-	// if (command == "PASS")
-	// 	result = checkPass(client, input.substr(input.find(' ') + 1));
-	// //add checkpoint connection for PASS, not connected send error & stop
-	// if (command == "USER")
-	// 	result = checkUser(client, input.substr(input.find(' ') + 1));
+	if (list_arg[0] == "PASS")
+		checkPass(client, list_arg);
+	if (list_arg[0] == "USER")
+		checkUser(client, list_arg);
 	// //add checkpoint to check user initialized, not initialized send error & stop
 	// if (command == "PRIVMSG")
 	// 	result = checkPrivmsg(client, input.substr(input.find(' ') + 1));
 
-	(void) result;
 }
 
 void	Server::sendToAll(Client &client)

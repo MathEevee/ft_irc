@@ -6,110 +6,95 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/10/22 18:36:09 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/23 17:56:58 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+#include "Error.hpp"
 
-bool	Server::checkPass(Client &client, std::string password)
+std::string	Server::checkPass(Client &client, std::deque<std::string> password)
 {
-	std::cout << "|" << password << "|"  << std::endl;
-	if (this->getPassword() == password && client.getStatus() == 0)
+	if (password.size() == 1)
+		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), password[0])));
+	password.pop_front();
+	std::string	check_password = password[0];
+	if (check_password[0] == ':')
+		check_password = check_password.substr(1);
+	if (password.size() == 1 && this->getPassword() == check_password && client.getStatus() == 0)
 	{
-		std::cout << "Client authentificated." << std::endl;
-		std::string client_msg = ":127.0.0.1: Your are authentificated.\r\n";
-		send(client.getSocketFd(), client_msg.c_str(), client_msg.size(), 0);
 		client.setStatus(1);
-		return (true);
+		return ("");
 	}
 	else if (client.getStatus() == 1)
-	{
-		client.send_error(462, ":You may not reregister");
-		return (true);
-	}
-	client.send_error(464, "Failed password attempt.");
-	return (false);
+		return (client.send_error(ERR_ALREADYREGISTRED(client.getNickname())));
+	return (client.send_error(ERR_PASSWDMISMATCH(client.getNickname())));
 }
 
-// modify function using client informations
-bool	Server::checkUser(Client& client, std::string data)
+std::string	Server::checkUser(Client& client, std::deque<std::string> data)
 {
-	std::string username;
-	std::string real_name;
-	std::string tmp = data;
+	std::deque<std::string> args;
+	std::string				params;
 	int i = 0;
 
-	if (client.getStatus() == 0)
-	{
-		//add error_send
-		std::cout << "Client not connected, use command 'PASS'" << std::endl;
-		return (false);
-	}
-	
-	// checkData for #, @
-	std::cout << data << std::endl;
-	for (std::string::iterator it = data.begin(); it != data.end(); it++)
-	{
-		if (isalnum(*it) == 0 && *it != ' ' && *it != '-' && *it != '_' && *it != '`' && *it != '^' && *it != '{' && *it != '}')
-		{
-			client.send_error(421, "USER :Unknown command");
-			return (false);
-		}
-	}
-	
-	if (!client.getUsername().size())
-	{
-		if (data.find(' ') == std::string::npos)
-			return (false);
+	if (client.getRealName() != "")
+		return (client.send_error(ERR_ALREADYREGISTRED(client.getNickname())));
+	if (data.size() == 1)
+		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 
-		while (i != 4)
-		{
-			if (i == 0)	
-				username = data.substr(0, data.find(' '));
-			if (i == 3)
-				real_name = data.substr(data.find_last_of(' ') + 1);
-			tmp = tmp.substr(tmp.find(' ') + 1);
-			i++;
-		}
+	params = data[1];
+	if (data[1][0] == ':')
+		params = data[1].substr(1);
+	args = splitCommand(params);
 
-		if (tmp != real_name)
-		{
-			//error to many args
-			client.send_error(461, "USER :Not enough parameters");
-			return (false);
-		}
-		client.setUsername(username);
-		client.setRealName(real_name);
-		//client set Username
-		return (true);
+	if (args.size() < 4)
+		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
+	else if (args.size() > 4)
+		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
+
+	if (client.getUsername().size() != 0)
+			return (ERR_ALREADYREGISTRED(client.getNickname()));
+
+	for (std::deque<std::string>::iterator it = args.begin(); it != args.end(); it++)
+	{
+		if ((*it).find('@') != std::string::npos || (*it).find('#') != std::string::npos)
+			return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
 	}
-	return (false);
+
+	client.setUsername(args[0]);
+	client.setRealName(args[3]);
+	if (client.getNickname().size() != 0)
+	{
+		client.connexionFull();
+		return ("");
+	}
+	// 	//client set Username
+	// return (false);
 }
 
 
-bool	Server::checkPrivmsg(Client &client, std::string data)
-{
-	std::string recipient = data.substr(0, data.find(' '));
+// std::string	Server::checkPrivmsg(Client &client, std::deque<std::string> data)
+// {
+// 	std::string recipient = data.substr(0, data.find(' '));
 	
-	if (recipient[0] == '#')
-	{
-		std::cout << "send in channel : " << recipient << " : " << data.substr(data.find(' ') + 1) << std::endl; 
-		//checkChannel & send message or error, channel doesn't exist
-	}
-	else
-	{
-		Client *interlocutor = this->findClientByNick(recipient);
-		if (interlocutor == NULL)
-		{
-			std::cout << "976 can't send message to user :" << recipient << std::endl;
-			//send error interlocutor doesn't exist
-		}
-		else
-		{
-			client.send_private_message(*interlocutor, data.substr(data.find(' ') + 1));
-		}
+// 	if (recipient[0] == '#')
+// 	{
+// 		std::cout << "send in channel : " << recipient << " : " << data.substr(data.find(' ') + 1) << std::endl; 
+// 		//checkChannel & send message or error, channel doesn't exist
+// 	}
+// 	else
+// 	{
+// 		Client *interlocutor = this->findClientByNick(recipient);
+// 		if (interlocutor == NULL)
+// 		{
+// 			std::cout << "976 can't send message to user :" << recipient << std::endl;
+// 			//send error interlocutor doesn't exist
+// 		}
+// 		else
+// 		{
+// 			client.send_private_message(*interlocutor, data.substr(data.find(' ') + 1));
+// 		}
 			
-	}
-	return (false);
-}
+// 	}
+// 	return (false);
+// }

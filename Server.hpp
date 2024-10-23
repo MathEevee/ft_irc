@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:25:59 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/22 18:41:03 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/23 17:57:26 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <cstring>
 # include <iostream>
 # include <vector>
+# include <deque>
 # include <netinet/in.h>
 # include <sys/socket.h>
 # include <unistd.h>
@@ -32,7 +33,7 @@
 # include <ctime>
 
 class Client;
-class Channel;
+// class Channel;
 
 class Server
 {
@@ -41,7 +42,7 @@ class Server
 		sockaddr_in 			_serverAddress;
 		std::vector<Client>		_client_list;
 		std::string				_password;
-		std::vector<Channel>	_channel_list;
+		// std::vector<Channel>	_channel_list;
 
 		void	runtime();
 		void	initialize_poll_fds(struct pollfd fds[NB_MAX_CLIENTS + 1]);
@@ -49,10 +50,12 @@ class Server
 		void	read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_client);
 		bool	process_commands(Client &client);
 
-		bool	checkPass(Client &client, std::string password);
-		bool	checkUser(Client &client, std::string data);
-		bool	checkPrivmsg(Client &client, std::string data);
-		void	sendToAll(Client &client);
+		std::string	checkPass(Client &client, std::deque<std::string> password);
+		std::string	checkUser(Client &client, std::deque<std::string> data);
+		std::string	checkPrivmsg(Client &client, std::deque<std::string> data);
+		void		sendToAll(Client &client);
+
+		void		connexionFull(void);
 
 
 
@@ -68,5 +71,7 @@ class Server
 		std::string	getPassword(void);
 		void		setPassword(std::string password);
 };
+
+std::deque<std::string>	splitCommand(std::string input);
 
 #endif

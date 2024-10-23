@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 17:47:20 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/21 19:16:20 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/23 14:43:02 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,15 +18,10 @@ void	Client::send_private_message(Client &recipient, std::string msg)
 	send(recipient.getSocketFd(), all_message.c_str(), all_message.size(), 0);
 }
 
-void	Client::send_error(int error, std::string msg_error)
+std::string	Client::send_error(std::string msg_error)
 {
-	std::stringstream out;
-	
-	std::cout << error << std::endl;
-	out << error;
-	std::string msg = ":127.0.0.1 " + out.str() + " " + msg_error + "\r\n";
-	send(this->getSocketFd(), msg.c_str(), msg.size(), 0);
-	std::cerr << msg_error << std::endl;
+	send(this->getSocketFd(), msg_error.c_str(), msg_error.size(), 0);
+	return (msg_error);
 }
 
 Client::Client(int socket_fd)

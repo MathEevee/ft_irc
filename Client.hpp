@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 18:36:54 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/22 17:44:25 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/23 14:43:15 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,8 @@ class Client
 		bool		_disconnected;
 
 	public :
-		void		send_error(int error, std::string msg_error);
-		void		send_private_message(Client &recipient, std::string msg);
+		std::string		send_error(std::string msg_error);
+		void			send_private_message(Client &recipient, std::string msg);
 
 		Client(int socket_fd);
 		~Client();
