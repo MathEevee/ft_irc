@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/10/23 17:56:58 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/24 15:00:21 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,44 +33,57 @@ std::string	Server::checkPass(Client &client, std::deque<std::string> password)
 
 std::string	Server::checkUser(Client& client, std::deque<std::string> data)
 {
-	std::deque<std::string> args;
-	std::string				params;
 	int i = 0;
 
 	if (client.getRealName() != "")
 		return (client.send_error(ERR_ALREADYREGISTRED(client.getNickname())));
+
 	if (data.size() == 1)
 		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
-
-	params = data[1];
-	if (data[1][0] == ':')
-		params = data[1].substr(1);
-	args = splitCommand(params);
-
-	if (args.size() < 4)
+	
+	if (data.size() < 5)
 		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
-	else if (args.size() > 4)
+	else if (data.size() > 5)
 		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
 
 	if (client.getUsername().size() != 0)
 			return (ERR_ALREADYREGISTRED(client.getNickname()));
 
-	for (std::deque<std::string>::iterator it = args.begin(); it != args.end(); it++)
+	for (std::deque<std::string>::iterator it = data.begin(); it != data.end(); it++)
 	{
 		if ((*it).find('@') != std::string::npos || (*it).find('#') != std::string::npos)
 			return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
 	}
 
-	client.setUsername(args[0]);
-	client.setRealName(args[3]);
+	client.setUsername(data[1]);
+	client.setRealName(data[4]);
+
 	if (client.getNickname().size() != 0)
-	{
-		client.connexionFull();
-		return ("");
-	}
-	// 	//client set Username
-	// return (false);
+		return (AUTHENTIFICATED(client.getNickname()));
+	return ("");
 }
+
+std::string	Server::checkNick(Client &client, std::deque<std::string> list_arg)
+{
+	if (list_arg.size() == 1 || list_arg[1] == "")
+		return (client.send_error(ERR_NONICKNAMEGIVEN));
+
+	if (list_arg[0].find('@') != std::string::npos || list_arg[0].find('#') != std::string::npos)
+		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), list_arg[0])));
+
+	if (this->findClientByNick(list_arg[1]) != NULL)
+			return (client.send_error(ERR_NICKNAMEINUSE(list_arg[0])));
+	
+	if (client.getUsername().size() != 0 && client.getNickname().size() == 0)
+	{
+		client.setNickname(list_arg[1]);
+		return (client.send_error(AUTHENTIFICATED(client.getNickname())));		
+	}
+
+	client.setNickname(list_arg[1]);
+	return (""); 
+}
+
 
 
 // std::string	Server::checkPrivmsg(Client &client, std::deque<std::string> data)

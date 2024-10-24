@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:25:59 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/23 17:57:26 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/24 13:34:59 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,9 @@ class Server
 
 		std::string	checkPass(Client &client, std::deque<std::string> password);
 		std::string	checkUser(Client &client, std::deque<std::string> data);
-		std::string	checkPrivmsg(Client &client, std::deque<std::string> data);
+		std::string	checkNick(Client &client, std::deque<std::string> list_arg);
+
+		// std::string	checkPrivmsg(Client &client, std::deque<std::string> data);
 		void		sendToAll(Client &client);
 
 		void		connexionFull(void);

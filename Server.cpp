@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/23 17:57:51 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/24 15:18:44 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,11 @@ std::deque<std::string>	splitCommand(std::string input)
 	std::string					arg;
 	bool						end_command = false;
 
+
+	if (input[input.size() - 1] == '\r')
+	{
+		input = input.substr(0, input.size() - 1);
+	}
 	for (std::string::iterator it = input.begin(); it != input.end(); it++)
 	{
 		if (*it == ' ' && end_command == false)
@@ -174,6 +179,8 @@ void	Server::commands_parsing(Client &client, std::string input)
 		checkPass(client, list_arg);
 	if (list_arg[0] == "USER")
 		checkUser(client, list_arg);
+	else if (list_arg[0] == "NICK")
+		checkNick(client, list_arg);
 	// //add checkpoint to check user initialized, not initialized send error & stop
 	// if (command == "PRIVMSG")
 	// 	result = checkPrivmsg(client, input.substr(input.find(' ') + 1));
