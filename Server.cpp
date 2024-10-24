@@ -6,16 +6,22 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/24 15:18:44 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/24 17:12:45 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-void	Server::connexionFull(void)
+std::string Server::sendToClient(Client &sender, std::string receiver, std::string msgToSend)
 {
-	
+	std::string	msg = sender.getNickname() + msgToSend;
+
+	if (this->findClientByNick(receiver) == NULL)
+		return (sender.send_error(ERR_NOSUCHNICK(receiver)));
+	send(this->findClientByNick(receiver)->getSocketFd(), msgToSend.c_str(), msgToSend.size(), 0);
+	return ("");
 }
+
 
 std::deque<std::string>	splitCommand(std::string input)
 {

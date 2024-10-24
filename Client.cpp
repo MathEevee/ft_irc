@@ -6,17 +6,11 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 17:47:20 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/23 14:43:02 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/24 17:12:38 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
-
-void	Client::send_private_message(Client &recipient, std::string msg)
-{
-	std::string all_message = this->getNickname() + ": " + msg + "\r\n";
-	send(recipient.getSocketFd(), all_message.c_str(), all_message.size(), 0);
-}
 
 std::string	Client::send_error(std::string msg_error)
 {
