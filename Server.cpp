@@ -6,15 +6,46 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/24 17:12:45 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/26 18:18:57 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
+Channel*	Server::findChannel(std::string channel)
+{
+	for (std::vector<Channel>::iterator it = this->_channel_list.begin(); it != this->_channel_list.end(); it++)
+	{
+		if (it->getName() == channel)
+			return (&(*it));
+	}
+	return (NULL);
+}
+
+std::string Server::sendToChannel(Client &sender, std::string channel, std::string msgToSend)
+{
+	std::string	msg = sender.getNickname() + " ";
+	if (channel[0] == '#')
+		channel = channel.substr(1);
+
+	if (msg[msg.size() - 1] != ':')
+		msg += ":";
+	msg += msgToSend;
+	
+	if (this->findChannel(channel) == NULL)
+		return (sender.send_error(ERR_NOSUCHNICK(channel)));
+
+	this->findChannel(channel)->sendAllClient(sender, msg);
+	return ("");
+}
+
 std::string Server::sendToClient(Client &sender, std::string receiver, std::string msgToSend)
 {
-	std::string	msg = sender.getNickname() + msgToSend;
+	std::string	msg = sender.getNickname() + " ";
+	
+	if (msg[msg.size() - 1] != ':')
+		msg += ":";
+	msg += msgToSend;
 
 	if (this->findClientByNick(receiver) == NULL)
 		return (sender.send_error(ERR_NOSUCHNICK(receiver)));
@@ -46,6 +77,7 @@ std::deque<std::string>	splitCommand(std::string input)
 		}
 		else if (*it == ':')
 			end_command = true;
+
 		if (*it != ' ' || end_command == true)
 			arg += *it;
 	}
@@ -66,13 +98,17 @@ void	Server::runtime()
 	{
 		bool	new_client = false;
 		initialize_poll_fds(fds);
+
 		int	nb_fd = poll(fds, _client_list.size() + 1, -1);
+
 		if (nb_fd == -1 && errno == EINTR)
 			return;
+
 		if ((fds[0].revents & POLLIN) != 0)
 		{
 			new_client = add_client();
 		}
+
 		if (new_client == true || this->_client_list.size() != 0)
 			read_all_clients(fds, new_client);
 	}
@@ -143,7 +179,7 @@ void	Server::read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_cl
 				if (size == 0)
 				{
 					it->setDisconnected(true);
-					this->sendToAll(*it);
+					// this->sendToAll(*it);
 				}
 				buffer[size] = 0;
 				message = message + buffer;
@@ -193,12 +229,12 @@ void	Server::commands_parsing(Client &client, std::string input)
 
 }
 
-void	Server::sendToAll(Client &client)
-{
+// void	Server::sendToAll(Client &client)
+// {
 	//for() loop all chann to send in all channel disconnected
-	std::string all_message = client.getNickname() + ": " + "disconnected" + "\r\n";
+	// std::string all_message = client.getNickname() + ": " + "disconnected" + "\r\n";
 	// send(this->getServerSocket(), all_message.c_str(), all_message.size(), 0);
-}
+// }
 
 
 Server::Server(int port, std::string password)

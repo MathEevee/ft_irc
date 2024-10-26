@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:25:59 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/24 17:07:12 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/26 17:16:07 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,10 @@
 # include <string>
 # include <ctime>
 # include "Error.hpp"
+# include "Channel.hpp"
 
 class Client;
-// class Channel;
+class Channel;
 
 class Server
 {
@@ -43,7 +44,7 @@ class Server
 		sockaddr_in 			_serverAddress;
 		std::vector<Client>		_client_list;
 		std::string				_password;
-		// std::vector<Channel>	_channel_list;
+		std::vector<Channel>	_channel_list;
 
 		void	runtime();
 		void	initialize_poll_fds(struct pollfd fds[NB_MAX_CLIENTS + 1]);
@@ -55,9 +56,11 @@ class Server
 		std::string	checkUser(Client &client, std::deque<std::string> data);
 		std::string	checkNick(Client &client, std::deque<std::string> list_arg);
 		std::string	checkPrivmsg(Client &client, std::deque<std::string> data);
-		std::string sendToClient(Client &sender, std::string receiver, std::string msgToSend);
+		std::string	checkJoin(Client &client, std::deque<std::string> data);
 
-		void		sendToAll(Client &client);
+		std::string sendToClient(Client &sender, std::string receiver, std::string msgToSend);
+		std::string sendToChannel(Client &sender, std::string channel, std::string msgToSend);
+		// void		sendToAll(Client &client);
 
 		void		connexionFull(void);
 
@@ -67,6 +70,7 @@ class Server
 		void		commands_parsing(Client &client, std::string commande);
 
 		Client*		findClientByNick(std::string recipient);
+		Channel*	findChannel(std::string channel);
 		
 		Server(int port, std::string password);
 		~Server();

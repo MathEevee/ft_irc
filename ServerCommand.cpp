@@ -6,11 +6,18 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/10/24 17:15:20 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/26 18:41:51 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+
+std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
+{
+	if (data.size() == 1)
+		return (client.send_error(ERR_NEEDMOREPARAMS(data[0])));
+	return ("");
+}
 
 std::string	Server::checkPass(Client &client, std::deque<std::string> password)
 {
@@ -20,7 +27,7 @@ std::string	Server::checkPass(Client &client, std::deque<std::string> password)
 	if (password.size() > 2)
 		return (client.send_error(ERR_TOOMANYPARAMS(password[0])));
 
-	if (password.size() == 1 && this->getPassword() == password[1] && client.getStatus() == 0)
+	if (password.size() == 2 && this->getPassword() == password[1] && client.getStatus() == 0)
 	{
 		client.setStatus(1);
 		return ("");
@@ -57,10 +64,9 @@ std::string	Server::checkUser(Client& client, std::deque<std::string> data)
 
 	client.setUsername(data[1]);
 	client.setRealName(data[4]);
-
-	if (client.getNickname().size() != 0)
-		return (AUTHENTIFICATED(client.getNickname()));
-	return ("");
+	if (client.getUsername().size() != 0 && client.getNickname().size() != 0)
+		return (client.send_error(AUTHENTIFICATED(client.getNickname())));
+	return (client.send_error(SELECTUSER(client.getUsername())));
 }
 
 std::string	Server::checkNick(Client &client, std::deque<std::string> list_arg)
@@ -74,24 +80,39 @@ std::string	Server::checkNick(Client &client, std::deque<std::string> list_arg)
 	if (this->findClientByNick(list_arg[1]) != NULL)
 			return (client.send_error(ERR_NICKNAMEINUSE(list_arg[0])));
 	
-	if (client.getUsername().size() != 0 && client.getNickname().size() == 0)
+	if (client.getNickname().size() == 0)
 	{
 		client.setNickname(list_arg[1]);
-		return (client.send_error(AUTHENTIFICATED(client.getNickname())));		
+		return (client.send_error(SELECTNICKNAME(client.getNickname())));		
 	}
 
 	client.setNickname(list_arg[1]);
-	return (""); 
+	return (client.send_error(CHANGENICKNAME(client.getNickname()))); 
 }
 
 
 
 std::string	Server::checkPrivmsg(Client &client, std::deque<std::string> data)
 {
-	if (data.size() < 3)
-		return (client.send_error());
+	std::string	msg_to_send;
+
 	std::deque<std::string>	receiver = data;
-	receiver.pop_back();
+
 	receiver.pop_front();
-	for ()
+	if (receiver.size() == 0)
+		return (client.send_error(ERR_NORECIPIENT(data[0])));
+	else if (receiver.size() == 1)
+		return (client.send_error(ERR_NOTEXTTOSEND));
+
+	receiver.pop_back();
+	msg_to_send = data[data.size() - 1];
+
+	for (std::deque<std::string>::iterator it = receiver.begin(); it != receiver.end(); it++)
+	{
+		if ((*it)[0] != '#')
+			this->sendToClient(client, *it, msg_to_send);
+		else
+			this->sendToChannel(client, *it, msg_to_send);
+	}
+	return ("");
 }
