@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/26 18:18:57 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/26 20:01:01 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,13 +43,11 @@ std::string Server::sendToClient(Client &sender, std::string receiver, std::stri
 {
 	std::string	msg = sender.getNickname() + " ";
 	
-	if (msg[msg.size() - 1] != ':')
-		msg += ":";
 	msg += msgToSend;
-
+	msg += "\r\n";
 	if (this->findClientByNick(receiver) == NULL)
 		return (sender.send_error(ERR_NOSUCHNICK(receiver)));
-	send(this->findClientByNick(receiver)->getSocketFd(), msgToSend.c_str(), msgToSend.size(), 0);
+	send(this->findClientByNick(receiver)->getSocketFd(), msg.c_str(), msg.size(), 0);
 	return ("");
 }
 
@@ -62,9 +60,7 @@ std::deque<std::string>	splitCommand(std::string input)
 
 
 	if (input[input.size() - 1] == '\r')
-	{
 		input = input.substr(0, input.size() - 1);
-	}
 	for (std::string::iterator it = input.begin(); it != input.end(); it++)
 	{
 		if (*it == ' ' && end_command == false)
@@ -82,11 +78,7 @@ std::deque<std::string>	splitCommand(std::string input)
 			arg += *it;
 	}
 	if (arg.size() != 0)
-	{
-		if (arg[arg.size()] == '\r')
-			arg = arg.substr(0, arg.size() - 1);
 		tab.push_back(arg);
-	}
 	return (tab);
 }
 
@@ -154,7 +146,7 @@ bool	Server::add_client()
 		{
 			Client	new_client(clientSocket);
 			this->_client_list.push_back(new_client);
-			std::cout << "New client connected." << std::endl;
+			std::cout << "New client connected.\r" << std::endl;
 			return (true);
 		}
 	}
@@ -224,8 +216,8 @@ void	Server::commands_parsing(Client &client, std::string input)
 	else if (list_arg[0] == "NICK")
 		checkNick(client, list_arg);
 	// //add checkpoint to check user initialized, not initialized send error & stop
-	// if (command == "PRIVMSG")
-	// 	result = checkPrivmsg(client, input.substr(input.find(' ') + 1));
+	if (list_arg[0] == "PRIVMSG")
+		checkPrivmsg(client, list_arg);
 
 }
 

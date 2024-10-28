@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/10/26 18:41:51 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/26 18:59:05 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,8 @@ std::string	Server::checkUser(Client& client, std::deque<std::string> data)
 
 	client.setUsername(data[1]);
 	client.setRealName(data[4]);
+	if (client.getNickname().size() != 0)
+		client.setStatus(true);
 	if (client.getUsername().size() != 0 && client.getNickname().size() != 0)
 		return (client.send_error(AUTHENTIFICATED(client.getNickname())));
 	return (client.send_error(SELECTUSER(client.getUsername())));
@@ -78,7 +80,10 @@ std::string	Server::checkNick(Client &client, std::deque<std::string> list_arg)
 		return (client.send_error(ERR_TOOMANYPARAMS(list_arg[0])));
 
 	if (this->findClientByNick(list_arg[1]) != NULL)
-			return (client.send_error(ERR_NICKNAMEINUSE(list_arg[0])));
+	{
+		client.setDisconnected(true);
+		return (client.send_error(ERR_NICKNAMEINUSE(list_arg[0])));
+	}
 	
 	if (client.getNickname().size() == 0)
 	{
@@ -87,6 +92,8 @@ std::string	Server::checkNick(Client &client, std::deque<std::string> list_arg)
 	}
 
 	client.setNickname(list_arg[1]);
+	if (client.getUsername().size() != 0)
+		client.setStatus(true);
 	return (client.send_error(CHANGENICKNAME(client.getNickname()))); 
 }
 
