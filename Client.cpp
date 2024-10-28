@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 17:47:20 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/26 18:21:53 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/28 17:03:44 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,9 @@ std::string	Client::send_error(std::string msg_error)
 	return (msg_error);
 }
 
-Client::Client(int socket_fd)
+Client::Client(int socket_fd, std::string ip)
 {
+	this->_ip = ip;
 	this->setUsername("");
 	this->setRealName("");
 	this->setNickname("");
@@ -39,6 +40,7 @@ Client::Client(const Client &obj)
 
 Client	&Client::operator=(const Client &obj)
 {
+	_ip = obj._ip;
 	_username = obj._username;
 	_real_name = obj._real_name;
 	_nickname = obj._nickname;
@@ -48,6 +50,12 @@ Client	&Client::operator=(const Client &obj)
 	_disconnected = obj._disconnected;
 	return *this;
 }
+
+std::string	Client::getIp(void)
+{
+	return (this->_ip);
+}
+
 
 std::string	Client::getUsername(void)
 {

@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 18:36:54 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/24 17:12:43 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/28 17:03:37 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,13 @@
 # include <iostream>
 # include <sstream>
 # include <sys/socket.h>
+# include <netinet/in.h>
+# include <arpa/inet.h>
 
 class Client
 {
 	private :
+		std::string	_ip;
 		std::string	_username;
 		std::string	_real_name;
 		std::string	_nickname;
@@ -33,7 +36,7 @@ class Client
 	public :
 		std::string		send_error(std::string msg_error);
 
-		Client(int socket_fd);
+		Client(int socket_fd, std::string ip);
 		~Client();
 		Client(const Client &obj);
 
@@ -47,6 +50,7 @@ class Client
 		void		setMessage(std::string message);
 		void		setDisconnected(bool status);
 
+		std::string	getIp(void);
 		std::string	getUsername(void);
 		std::string	getRealName(void);
 		std::string	getNickname(void);

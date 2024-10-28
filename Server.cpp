@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/26 20:01:01 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/28 16:58:34 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,10 +41,8 @@ std::string Server::sendToChannel(Client &sender, std::string channel, std::stri
 
 std::string Server::sendToClient(Client &sender, std::string receiver, std::string msgToSend)
 {
-	std::string	msg = sender.getNickname() + " ";
+	std::string	msg = PRIVMSG(sender.getNickname(), sender.getUsername(), sender.getIp(), receiver, msgToSend);
 	
-	msg += msgToSend;
-	msg += "\r\n";
 	if (this->findClientByNick(receiver) == NULL)
 		return (sender.send_error(ERR_NOSUCHNICK(receiver)));
 	send(this->findClientByNick(receiver)->getSocketFd(), msg.c_str(), msg.size(), 0);
@@ -134,17 +132,22 @@ Client*		Server::findClientByNick(std::string recipient)
 
 bool	Server::add_client()
 {
-	int clientSocket = accept(this->getServerSocket(), NULL, NULL);
+	sockaddr_in		*addr;
+	unsigned int	len;
+
+	int clientSocket = accept(this->getServerSocket(), (struct sockaddr*)&addr, &len);
 	if (clientSocket != -1)
 	{
 		if (this->_client_list.size() >= NB_MAX_CLIENTS)
 		{
 			close(clientSocket);
-			std::cout << "Too many clients" << std::endl;
+			std::cout << "Too many clients.\r" << std::endl;
 		}
 		else
 		{
-			Client	new_client(clientSocket);
+			char	ip[INET_ADDRSTRLEN];
+			inet_ntop(AF_INET, &addr, ip, INET_ADDRSTRLEN);
+			Client	new_client(clientSocket, ip);
 			this->_client_list.push_back(new_client);
 			std::cout << "New client connected.\r" << std::endl;
 			return (true);
@@ -179,8 +182,8 @@ void	Server::read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_cl
 			} while (size == 1024);
 
 			this->process_commands(*it);
-			i++;
 		}
+		i++;
 
 		if ((*it).getDisconnected() == false)
 			it++;

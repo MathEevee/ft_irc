@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 12:16:46 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/26 18:43:57 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/28 17:05:12 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,5 +28,6 @@
 # define ERR_NORECIPIENT(cmd) ":127.0.0.1 411 :No recipient given " + cmd + "\r\n"
 # define ERR_NOTEXTTOSEND ":127.0.0.1 412 :No text to send\r\n"
 # define ERR_CANNOTSENDTOCHAN(channel) ":127.0.0.1 404 " + channel + " :Cannot send to channel\r\n"
+# define PRIVMSG(nameSender, userNameSender, ipSender, nickReceiver, msg) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " PRIVMSG " + nickReceiver + " " + msg + "\r\n"
 
 #endif
