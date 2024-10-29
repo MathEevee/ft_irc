@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:21:48 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/26 17:14:38 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/29 17:46:29 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,19 +24,32 @@ class Channel
 		std::deque<Client>	_list_client;
 		std::string			_name;
 		bool				_mode_i;
+		std::deque<Client>	_invite_list;
 		bool				_mode_t;
 		bool				_mode_k;
+		std::string			_password;
 		std::deque<Client>	_mode_o;
 		bool				_mode_l;
-		std::deque<Client>	_invite_list;
+		size_t				_nbr_client;
 	public :
 		Channel(std::string name, Client &new_client);
 		~Channel();
 		
 		std::string			getName(void);
+		bool				getModeK(void);
+		bool				getModeI(void);
+		bool				getModeL(void);
+		std::string			getPassword(void);
+		std::deque<Client>&	getList(void);
+		size_t				getNbrClient(void);
+
 		void				setName(std::string name);
+		void				setPassword(std::string password);
+		void				setNbrClient(size_t nbr);
+		void				setModeL(bool l);
 		
 		void				addClient(Client &new_client);
+		
 
 		std::string			sendAllClient(Client &sender, std::string msg);
 		Client*				findClientByNick(std::string sender, std::deque<Client> list);

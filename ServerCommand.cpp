@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/10/26 18:59:05 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/29 17:34:45 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,46 @@ std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 {
 	if (data.size() == 1)
 		return (client.send_error(ERR_NEEDMOREPARAMS(data[0])));
+	else if (data.size() > 3)
+		return (client.send_error(ERR_TOOMANYPARAMS(data[0])));
+	
+	std::deque<std::string> list_channel = parsingMultiArgs(data[1]);
+	std::deque<std::string> list_password = parsingMultiArgs(data[2]);
+	
+	int i = 0;
+	for (std::deque<std::string>::iterator it = list_channel.begin(); it != list_channel.end(); it++)
+	{
+		if (this->findChannel(*it) == NULL)
+		{
+			if ((*it)[0] != '#')
+				return (client.send_error(ERR_NOSUCHCHANNEL(*it)));
+			//this->createChannel(client, *it);
+		}
+		Channel	*refChann = this->findChannel(*it);
+		if (refChann->getModeI() == true)
+		{
+			if (refChann->findClientByNick(*it, refChann->getList()) == NULL)
+			{
+				if (refChann->getModeK() == true)
+					i++;
+				client.send_error(ERR_INVITEONLYCHAN(*it));
+				continue ;
+			}
+			if (refChann->getModeK() == false)
+			{
+				// joinChannel(refChann, client) check la taille de la liste dedans
+			}
+		}
+		if (refChann->getModeK() == true)
+		{
+			if (i < list_password.size() && refChann->getPassword() != list_password[i])
+				client.send_error(ERR_BADCHANNELKEY(*it));
+			// else
+				// joinChannel(refChann, client)
+			i++;
+		}
+	}
+	
 	return ("");
 }
 
@@ -91,9 +131,14 @@ std::string	Server::checkNick(Client &client, std::deque<std::string> list_arg)
 		return (client.send_error(SELECTNICKNAME(client.getNickname())));		
 	}
 
+	if (client.getStatus() == true)
+		this->sendToAllClient(client, list_arg[1]);
 	client.setNickname(list_arg[1]);
-	if (client.getUsername().size() != 0)
+	if (client.getUsername().size() != 0 && client.getStatus() == false)
+	{
 		client.setStatus(true);
+		return (client.send_error(AUTHENTIFICATED(client.getNickname())));
+	}
 	return (client.send_error(CHANGENICKNAME(client.getNickname()))); 
 }
 
@@ -110,8 +155,10 @@ std::string	Server::checkPrivmsg(Client &client, std::deque<std::string> data)
 		return (client.send_error(ERR_NORECIPIENT(data[0])));
 	else if (receiver.size() == 1)
 		return (client.send_error(ERR_NOTEXTTOSEND));
+	else if (receiver.size() > 2)
+		return (client.send_error(ERR_TOOMANYPARAMS(data[0])));
 
-	receiver.pop_back();
+	receiver = parsingMultiArgs(data[1]);
 	msg_to_send = data[data.size() - 1];
 
 	for (std::deque<std::string>::iterator it = receiver.begin(); it != receiver.end(); it++)

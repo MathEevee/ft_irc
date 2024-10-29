@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:32:23 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/26 18:19:30 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/29 18:14:29 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,9 +42,11 @@ Channel::Channel(std::string name, Client &new_client)
 	_mode_i = false;
 	_mode_t = false;
 	_mode_k = false;
-	_mode_l = false;
+	setModeL(false);
 	_mode_o.push_back(new_client);
 	_invite_list.push_back(new_client);
+	setPassword("");
+	setNbrClient(0);
 }
 
 Channel::~Channel()
@@ -55,12 +57,60 @@ std::string	Channel::getName(void)
 	return (this->_name);
 }
 
+void	Channel::setPassword(std::string password)
+{
+	this->_password = password;
+}
+
+bool	Channel::getModeK(void)
+{
+	return (this->_mode_k);
+}
+
+bool	Channel::getModeI(void)
+{
+	return (this->_mode_i);
+}
+
+bool	Channel::getModeL(void)
+{
+	return (this->_mode_l);
+}
+
+std::deque<Client>&	Channel::getList(void)
+{
+	return (this->_invite_list);
+}
+
+size_t	Channel::getNbrClient(void)
+{
+	return (this->_nbr_client);
+}
+
+
+std::string	Channel::getPassword(void)
+{
+	return (this->_password);
+}
+
+
 void	Channel::setName(std::string name)
 {
 	this->_name = name;
 }
-		
+
+void	Channel::setNbrClient(size_t nbr)
+{
+	this->_nbr_client = nbr;
+}
+
+void	Channel::setModeL(bool l)
+{
+	this->_mode_l = l;
+}
+
 void	Channel::addClient(Client &new_client)
 {
-	this->_list_client.push_back(new_client);	
+	this->_list_client.push_back(new_client);
+	// this->sendAllClient(new_client, ); ajouter le msg
 }

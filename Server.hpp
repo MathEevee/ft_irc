@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:25:59 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/28 16:52:02 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/29 17:36:22 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,11 +47,11 @@ class Server
 		std::string				_password;
 		std::vector<Channel>	_channel_list;
 
-		void	runtime();
-		void	initialize_poll_fds(struct pollfd fds[NB_MAX_CLIENTS + 1]);
-		bool	add_client();
-		void	read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_client);
-		bool	process_commands(Client &client);
+		void		runtime();
+		void		initialize_poll_fds(struct pollfd fds[NB_MAX_CLIENTS + 1]);
+		bool		add_client();
+		void		read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_client);
+		bool		process_commands(Client &client);
 
 		std::string	checkPass(Client &client, std::deque<std::string> password);
 		std::string	checkUser(Client &client, std::deque<std::string> data);
@@ -61,9 +61,9 @@ class Server
 
 		std::string sendToClient(Client &sender, std::string receiver, std::string msgToSend);
 		std::string sendToChannel(Client &sender, std::string channel, std::string msgToSend);
-		// void		sendToAll(Client &client);
+		void		sendToAllClient(Client &client, std::string new_nickname);
 
-		void		connexionFull(void);
+		// void		connexionFull(void);
 
 
 
@@ -72,6 +72,7 @@ class Server
 
 		Client*		findClientByNick(std::string recipient);
 		Channel*	findChannel(std::string channel);
+		void		joinChannel(Client &client, Channel &channel);
 		
 		Server(int port, std::string password);
 		~Server();
@@ -82,5 +83,6 @@ class Server
 };
 
 std::deque<std::string>	splitCommand(std::string input);
+std::deque<std::string>	parsingMultiArgs(std::string data);
 
 #endif

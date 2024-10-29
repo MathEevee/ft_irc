@@ -6,11 +6,53 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/28 16:58:34 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/29 18:06:59 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+
+std::deque<std::string>	parsingMultiArgs(std::string data)
+{
+	std::deque<std::string> tab;
+
+	size_t found = data.find(',');
+	std::string	receiver = data.substr(0, found);
+	while (found != std::string::npos)
+	{
+		if (receiver.size() != 0)
+			tab.push_back(receiver);
+		receiver = data.substr(found + 1, data.find(',', found) + 1);
+		found = data.find(',', found + receiver.size());
+	}
+	if (receiver != tab[tab.size() - 1])
+		tab.push_back(receiver);
+	return (tab);
+}
+
+void	Server::joinChannel(Client &client, Channel &channel)
+{
+	if (channel.getModeL() == true)
+	{
+		if (channel.getList().size() < channel.getNbrClient())
+			channel.addClient(client);
+		else
+			client.send_error(ERR_CHANNELISFULL(channel.getName()));
+	}
+	else
+		channel.addClient(client);
+}
+
+
+void	Server::sendToAllClient(Client &client, std::string new_nickname)
+{
+	std::string	toSend = CHANGENICKNAMEFORALL(client.getNickname(), new_nickname);
+	for (std::vector<Client>::iterator it = this->_client_list.begin(); it != this->_client_list.end(); it++)
+	{
+		if (it->getNickname() != client.getNickname())
+			send(it->getSocketFd(), toSend.c_str(), toSend.size(), 0);
+	}
+}
 
 Channel*	Server::findChannel(std::string channel)
 {
@@ -41,7 +83,7 @@ std::string Server::sendToChannel(Client &sender, std::string channel, std::stri
 
 std::string Server::sendToClient(Client &sender, std::string receiver, std::string msgToSend)
 {
-	std::string	msg = PRIVMSG(sender.getNickname(), sender.getUsername(), sender.getIp(), receiver, msgToSend);
+	std::string	msg = MSGSEND(sender.getNickname(), sender.getUsername(), sender.getIp(), receiver, msgToSend);
 	
 	if (this->findClientByNick(receiver) == NULL)
 		return (sender.send_error(ERR_NOSUCHNICK(receiver)));
@@ -218,9 +260,20 @@ void	Server::commands_parsing(Client &client, std::string input)
 		checkUser(client, list_arg);
 	else if (list_arg[0] == "NICK")
 		checkNick(client, list_arg);
-	// //add checkpoint to check user initialized, not initialized send error & stop
+	if (client.getStatus() == false && (list_arg[0] != "PASS" || list_arg[0] != "USER" || list_arg[0] != "USER"))
+	{
+		std::string	msg = NOTAUTHENTIFICATED;
+		send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
+		return ;
+	}
 	if (list_arg[0] == "PRIVMSG")
 		checkPrivmsg(client, list_arg);
+	// else if (list_arg[0] == "JOIN")
+		// checkJoin(client, list_arg);
+	// else if ()
+	// else if ()
+	// else if ()
+	// else if ()
 
 }
 
