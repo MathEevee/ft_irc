@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/10/29 17:34:45 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/30 17:53:22 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,9 @@ std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 		return (client.send_error(ERR_TOOMANYPARAMS(data[0])));
 	
 	std::deque<std::string> list_channel = parsingMultiArgs(data[1]);
-	std::deque<std::string> list_password = parsingMultiArgs(data[2]);
-	
+	std::deque<std::string> list_password;
+	if (data.size() == 3)
+		list_password = parsingMultiArgs(data[2]);
 	int i = 0;
 	for (std::deque<std::string>::iterator it = list_channel.begin(); it != list_channel.end(); it++)
 	{
@@ -29,30 +30,30 @@ std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 		{
 			if ((*it)[0] != '#')
 				return (client.send_error(ERR_NOSUCHCHANNEL(*it)));
-			//this->createChannel(client, *it);
+			this->createChannel(client, *it);
 		}
-		Channel	*refChann = this->findChannel(*it);
-		if (refChann->getModeI() == true)
+		else
 		{
-			if (refChann->findClientByNick(*it, refChann->getList()) == NULL)
+			Channel	*refChann = this->findChannel(*it);
+			if (refChann->getModeI() == true)
 			{
-				if (refChann->getModeK() == true)
+				if (refChann->findClientByNick(*it, refChann->getList()) == NULL)
+				{
+					client.send_error(ERR_INVITEONLYCHAN(*it));
+					continue ;
+				}
+			}
+			if (refChann->getModeK() == true)
+			{
+				if (i < list_password.size() && refChann->getPassword() != list_password[i])
+				{
+					client.send_error(ERR_BADCHANNELKEY(*it));
 					i++;
-				client.send_error(ERR_INVITEONLYCHAN(*it));
-				continue ;
+					continue ;
+				}
+				i++;
 			}
-			if (refChann->getModeK() == false)
-			{
-				// joinChannel(refChann, client) check la taille de la liste dedans
-			}
-		}
-		if (refChann->getModeK() == true)
-		{
-			if (i < list_password.size() && refChann->getPassword() != list_password[i])
-				client.send_error(ERR_BADCHANNELKEY(*it));
-			// else
-				// joinChannel(refChann, client)
-			i++;
+			this->joinChannel(client, *refChann);
 		}
 	}
 	

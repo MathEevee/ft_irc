@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:25:59 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/29 17:36:22 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/30 16:13:55 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,14 +72,22 @@ class Server
 
 		Client*		findClientByNick(std::string recipient);
 		Channel*	findChannel(std::string channel);
-		void		joinChannel(Client &client, Channel &channel);
+		void		joinChannel(Client &client, Channel &channel) const;
+		void		createChannel(Client &client, std::string name);
+
+		void		sendToAll(Client &client);
+
+		void		leaveAllChannel(Client &client);
+
 		
 		Server(int port, std::string password);
 		~Server();
 
-		int			getServerSocket();
-		std::string	getPassword(void);
-		void		setPassword(std::string password);
+		int						getServerSocket();
+		std::string				getPassword(void);
+		std::vector<Channel>&	getListChannel(void);
+		std::vector<Client>&	getListClient(void);
+		void					setPassword(std::string password);
 };
 
 std::deque<std::string>	splitCommand(std::string input);

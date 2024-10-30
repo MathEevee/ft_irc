@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:21:48 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/29 17:46:29 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/30 18:00:48 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,13 +42,17 @@ class Channel
 		std::string			getPassword(void);
 		std::deque<Client>&	getList(void);
 		size_t				getNbrClient(void);
+		std::deque<Client>&	getAllClient(void);
+		std::deque<Client>&	getClientOp(void);
 
 		void				setName(std::string name);
 		void				setPassword(std::string password);
 		void				setNbrClient(size_t nbr);
 		void				setModeL(bool l);
 		
-		void				addClient(Client &new_client);
+		void				addClient(Client &new_client, std::string msg);
+		void				removeClient(Client &client);// remove all list
+		void				deleteClient(Client &client, std::deque<Client> &list);
 		
 
 		std::string			sendAllClient(Client &sender, std::string msg);

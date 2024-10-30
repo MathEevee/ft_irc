@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/29 18:06:59 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/30 17:46:12 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@ std::deque<std::string>	parsingMultiArgs(std::string data)
 
 	size_t found = data.find(',');
 	std::string	receiver = data.substr(0, found);
+	tab.push_back(receiver);
 	while (found != std::string::npos)
 	{
 		if (receiver.size() != 0)
@@ -30,17 +31,24 @@ std::deque<std::string>	parsingMultiArgs(std::string data)
 	return (tab);
 }
 
-void	Server::joinChannel(Client &client, Channel &channel)
+void	Server::createChannel(Client &client, std::string name)
+{
+	Channel new_channel(name, client);
+	this->_channel_list.push_back(new_channel);
+}
+
+
+void	Server::joinChannel(Client &client, Channel &channel) const
 {
 	if (channel.getModeL() == true)
 	{
 		if (channel.getList().size() < channel.getNbrClient())
-			channel.addClient(client);
+			channel.addClient(client, MSGJOIN(client.getNickname(), client.getUsername(), client.getIp(), channel.getName()));
 		else
 			client.send_error(ERR_CHANNELISFULL(channel.getName()));
 	}
 	else
-		channel.addClient(client);
+		channel.addClient(client, MSGJOIN(client.getNickname(), client.getUsername(), client.getIp(), channel.getName()));
 }
 
 
@@ -66,13 +74,7 @@ Channel*	Server::findChannel(std::string channel)
 
 std::string Server::sendToChannel(Client &sender, std::string channel, std::string msgToSend)
 {
-	std::string	msg = sender.getNickname() + " ";
-	if (channel[0] == '#')
-		channel = channel.substr(1);
-
-	if (msg[msg.size() - 1] != ':')
-		msg += ":";
-	msg += msgToSend;
+	std::string	msg = MSGSEND(sender.getNickname(), sender.getUsername(), sender.getIp(), channel, msgToSend);
 	
 	if (this->findChannel(channel) == NULL)
 		return (sender.send_error(ERR_NOSUCHNICK(channel)));
@@ -171,12 +173,27 @@ Client*		Server::findClientByNick(std::string recipient)
 	return (NULL);
 }
 
+void	Server::leaveAllChannel(Client &client)
+{
+	std::vector<Channel> &channels = this->getListChannel();
+	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end();)
+	{
+		if ((*it).findClientByNick(client.getNickname(), (*it).getAllClient()))
+			it->removeClient(client);
+		if (it->getAllClient().size() == 0)
+			it = channels.erase(it);
+		else
+			it++;
+	}
+}
+
 
 bool	Server::add_client()
 {
-	sockaddr_in		*addr;
-	unsigned int	len;
+	sockaddr_in		addr;
+	unsigned int	len = 0;
 
+	std::memset(&addr, 0, sizeof(sockaddr_in));
 	int clientSocket = accept(this->getServerSocket(), (struct sockaddr*)&addr, &len);
 	if (clientSocket != -1)
 	{
@@ -198,6 +215,16 @@ bool	Server::add_client()
 	return (false);
 }
 
+void	Server::sendToAll(Client &client)
+{
+	for (std::vector<Client>::iterator it = this->getListClient().begin(); it != this->getListClient().end(); it++)
+	{
+		std::string	msgLeave = USERDISCONNECTED(client.getNickname(), client.getUsername(), client.getIp(), it->getNickname());
+		if (it->getNickname() != client.getNickname())
+			send(it->getSocketFd(), msgLeave.c_str(), msgLeave.size(), 0);
+	}
+}
+
 void	Server::read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_client)
 {
 	int		i = 1;
@@ -214,10 +241,7 @@ void	Server::read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_cl
 			{
 				size = recv(fds[i].fd, buffer, sizeof(buffer) - 1, 0);
 				if (size == 0)
-				{
 					it->setDisconnected(true);
-					// this->sendToAll(*it);
-				}
 				buffer[size] = 0;
 				message = message + buffer;
 				it->setMessage(message);
@@ -230,7 +254,11 @@ void	Server::read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_cl
 		if ((*it).getDisconnected() == false)
 			it++;
 		else
+		{
+			this->leaveAllChannel(*it);
+			this->sendToAll(*it);
 			it = this->_client_list.erase(it);
+		}
 	}
 }
 
@@ -268,22 +296,14 @@ void	Server::commands_parsing(Client &client, std::string input)
 	}
 	if (list_arg[0] == "PRIVMSG")
 		checkPrivmsg(client, list_arg);
-	// else if (list_arg[0] == "JOIN")
-		// checkJoin(client, list_arg);
+	else if (list_arg[0] == "JOIN")
+		checkJoin(client, list_arg);
 	// else if ()
 	// else if ()
 	// else if ()
 	// else if ()
 
 }
-
-// void	Server::sendToAll(Client &client)
-// {
-	//for() loop all chann to send in all channel disconnected
-	// std::string all_message = client.getNickname() + ": " + "disconnected" + "\r\n";
-	// send(this->getServerSocket(), all_message.c_str(), all_message.size(), 0);
-// }
-
 
 Server::Server(int port, std::string password)
 {
@@ -307,10 +327,21 @@ Server::~Server()
 	}
 }
 
+std::vector<Client>&	Server::getListClient(void)
+{
+	return (this->_client_list);
+}
+
 int	Server::getServerSocket()
 {
 	return (this->_server_socket);
 }
+
+std::vector<Channel>&	Server::getListChannel(void)
+{
+	return (this->_channel_list);
+}
+
 
 void	Server::setPassword(std::string password)
 {

@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 17:47:20 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/28 17:03:44 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/30 15:14:27 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,8 +122,11 @@ void	Client::setMessage(std::string message)
 	this->_message_buffer = message;
 }
 
+
+
 void	Client::setDisconnected(bool status)
 {
+	//delete all channel
 	if (status == true)
 		close(this->getSocketFd());
 	this->_disconnected = status;

@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 12:16:46 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/29 18:12:47 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/30 17:57:56 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,15 @@
 # define ERR_CHANNELISFULL(channel) ":127.0.0.1 471 " + channel + " :Cannot join channel (+l)\r\n"
 
 # define MSGSEND(nameSender, userNameSender, ipSender, nickReceiver, msg) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " PRIVMSG " + nickReceiver + " " + msg + "\r\n"
-# define MSGSEND(nameSender, userNameSender, ipSender, channel) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " JOIN " + channel + "\r\n"
+# define MSGJOIN(nameSender, userNameSender, ipSender, channel) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " JOIN " + channel + "\r\n"
+
+# define CHANNELLEAVE(nameSender, userNameSender, ipSender, channelReceiver) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " " + channelReceiver + " Leave\r\n"
+# define USERDISCONNECTED(nameSender, userNameSender, ipSender, nickReceiver) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " " + nickReceiver + " Disconnected\r\n"
+
+
+//add with join
+// S <-   :irc.example.com MODE #test +nt
+// S <-   :irc.example.com 353 dan = #test :@dan
+// S <-   :irc.example.com 366 dan #test :End of /NAMES list.
 
 #endif
