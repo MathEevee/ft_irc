@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 12:16:46 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/30 17:57:56 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/31 16:47:30 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,10 +41,15 @@
 # define CHANNELLEAVE(nameSender, userNameSender, ipSender, channelReceiver) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " " + channelReceiver + " Leave\r\n"
 # define USERDISCONNECTED(nameSender, userNameSender, ipSender, nickReceiver) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " " + nickReceiver + " Disconnected\r\n"
 
-
+# define CHANNELMODE(channel, msg) ":127.0.0.1 MODE " + channel + " " + msg + "\r\n"
+# define CHANNELLIST(name, channel, msg) ":127.0.0.1 353 " + name + " = " + channel + " :" + msg + "\r\n"
+# define CHANNELEND(name, channel) ":127.0.0.1 366 " + name + " " + channel + " :End of /NAMES list." + "\r\n"
+# define CHANELLTOPIC(name, channel, topic) ":127.0.0.1 332 " + name + " " + channel + " :" + topic + "\r\n"
 //add with join
 // S <-   :irc.example.com MODE #test +nt
 // S <-   :irc.example.com 353 dan = #test :@dan
 // S <-   :irc.example.com 366 dan #test :End of /NAMES list.
+// S <-   :irc.example.com 332 alice #test :This is my cool channel! https://irc.com
+
 
 #endif

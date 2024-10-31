@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:32:23 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/30 17:59:49 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/31 17:02:19 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,8 @@ std::string	Channel::sendAllClient(Client &sender, std::string msg)
 		return (ERR_CANNOTSENDTOCHAN(this->getName()));
 	for (std::deque<Client>::iterator it = this->_list_client.begin(); it != this->_list_client.end(); it++)
 	{
-		send((*it).getSocketFd(), msg.c_str(), msg.size(), 0);
+		if (it->getNickname() == sender.getNickname())
+			send((*it).getSocketFd(), msg.c_str(), msg.size(), 0);
 	}
 	return ("");
 }
@@ -60,9 +61,10 @@ Channel::Channel(std::string name, Client &new_client)
 	
 	addClient(new_client, MSGJOIN(new_client.getNickname(), new_client.getUsername(), new_client.getIp(), name));
 	_mode_i = false;
-	_mode_t = false;
 	_mode_k = false;
 	setModeL(false);
+	setModeT(false);
+	setTopic("");
 	_mode_o.push_back(new_client);
 	_invite_list.push_back(new_client);
 	setPassword("");
@@ -82,6 +84,31 @@ void	Channel::setPassword(std::string password)
 	this->_password = password;
 }
 
+void	Channel::setName(std::string name)
+{
+	this->_name = name;
+}
+
+void	Channel::setNbrClient(size_t nbr)
+{
+	this->_nbr_client = nbr;
+}
+
+void	Channel::setModeT(bool t)
+{
+	this->_mode_t = t;
+}
+
+void	Channel::setModeL(bool l)
+{
+	this->_mode_l = l;
+}
+
+void	Channel::setTopic(std::string topic)
+{
+	this->_topic = topic;
+}
+
 bool	Channel::getModeK(void)
 {
 	return (this->_mode_k);
@@ -95,6 +122,11 @@ bool	Channel::getModeI(void)
 bool	Channel::getModeL(void)
 {
 	return (this->_mode_l);
+}
+
+bool	Channel::getModeT(void)
+{
+	return (this->_mode_t);
 }
 
 std::deque<Client>&	Channel::getList(void)
@@ -123,25 +155,58 @@ std::string	Channel::getPassword(void)
 	return (this->_password);
 }
 
-
-void	Channel::setName(std::string name)
+std::string	Channel::getTopic(void)
 {
-	this->_name = name;
+	return (this->_topic);
 }
 
-void	Channel::setNbrClient(size_t nbr)
+std::string	Channel::getAllMode(void)
 {
-	this->_nbr_client = nbr;
+	std::string allMode = "+";
+	if (this->getModeK() == true)
+		allMode += "k";
+	if (this->getModeI() == true)
+		allMode += "i";
+	if (this->getModeL() == true)
+		allMode += "l";
+	if (this->getModeT() == true)
+		allMode += "t";
+	return (allMode);
 }
 
-void	Channel::setModeL(bool l)
+std::string	Channel::getAllUser(void)
 {
-	this->_mode_l = l;
+	std::string user;	
+	for (std::deque<Client>::iterator it = this->getAllClient().begin(); it != this->getAllClient().end(); it++)
+	{
+		if (this->findClientByNick(it->getNickname(), this->getClientOp()))
+			user += "@";
+		user += it->getNickname();
+		if (it != this->getAllClient().end())
+			user += " ";
+	}
+	return (user);
+}
+
+
+void	Channel::sendMsgJoin(Client &client)
+{
+	std::string	msg = CHANNELMODE(this->getName(), this->getAllMode());
+	send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
+	if (this->getModeT() == true)
+	{
+		msg = CHANELLTOPIC(client.getNickname(), this->getName(), this->getTopic());
+		send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
+	}
+	msg = CHANNELLIST(client.getNickname(), this->getName(),this->getAllUser());
+	send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
+	msg = CHANNELEND(client.getNickname(), this->getName());
+	send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
 }
 
 void	Channel::addClient(Client &new_client, std::string msg)
 {
 	this->_list_client.push_back(new_client);
 	this->sendAllClient(new_client, MSGJOIN(new_client.getNickname(), new_client.getUsername(), new_client.getIp(), this->getName()));
-	//add other msg with other informations with permissions and user in to new_client
+	this->sendMsgJoin(new_client);
 }

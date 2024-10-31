@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/10/30 17:53:22 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/10/31 16:53:37 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,8 +142,6 @@ std::string	Server::checkNick(Client &client, std::deque<std::string> list_arg)
 	}
 	return (client.send_error(CHANGENICKNAME(client.getNickname()))); 
 }
-
-
 
 std::string	Server::checkPrivmsg(Client &client, std::deque<std::string> data)
 {
