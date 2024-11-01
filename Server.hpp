@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:25:59 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/30 16:13:55 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/01 10:50:09 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ class Server
 		std::string	checkNick(Client &client, std::deque<std::string> list_arg);
 		std::string	checkPrivmsg(Client &client, std::deque<std::string> data);
 		std::string	checkJoin(Client &client, std::deque<std::string> data);
+		std::string	checkMode(Client &client, std::deque<std::string> data);
 
 		std::string sendToClient(Client &sender, std::string receiver, std::string msgToSend);
 		std::string sendToChannel(Client &sender, std::string channel, std::string msgToSend);
@@ -87,6 +88,7 @@ class Server
 		std::string				getPassword(void);
 		std::vector<Channel>&	getListChannel(void);
 		std::vector<Client>&	getListClient(void);
+
 		void					setPassword(std::string password);
 };
 

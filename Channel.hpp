@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:21:48 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/31 16:54:18 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/01 12:02:41 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ class Channel
 		bool				_mode_l;
 		size_t				_nbr_client;
 	public :
+		Channel();
 		Channel(std::string name, Client &new_client);
 		~Channel();
 		
@@ -61,14 +62,16 @@ class Channel
 		void				setNbrClient(size_t nbr);
 		void				setModeL(bool l);
 		void				setModeT(bool t);
+		void				setModeI(bool i);
+		void				setModeK(bool k);
 		
-		void				addClient(Client &new_client, std::string msg);
+		void				addClient(Client &new_client);
 		void				removeClient(Client &client);// remove all list
 		void				deleteClient(Client &client, std::deque<Client> &list);
 		void				sendMsgJoin(Client &client);
 		
 		std::string			sendAllClient(Client &sender, std::string msg);
-		Client*				findClientByNick(std::string sender, std::deque<Client> list);
+		Client*				findClientByNick(std::string sender, std::deque<Client> &list);
 };
 
 #endif

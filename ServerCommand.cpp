@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/10/31 16:53:37 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/01 11:05:17 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 	std::deque<std::string> list_password;
 	if (data.size() == 3)
 		list_password = parsingMultiArgs(data[2]);
-	int i = 0;
+	size_t	i = 0;
 	for (std::deque<std::string>::iterator it = list_channel.begin(); it != list_channel.end(); it++)
 	{
 		if (this->findChannel(*it) == NULL)
@@ -81,8 +81,6 @@ std::string	Server::checkPass(Client &client, std::deque<std::string> password)
 
 std::string	Server::checkUser(Client& client, std::deque<std::string> data)
 {
-	int i = 0;
-
 	if (client.getRealName() != "")
 		return (client.send_error(ERR_ALREADYREGISTRED));
 
@@ -169,3 +167,8 @@ std::string	Server::checkPrivmsg(Client &client, std::deque<std::string> data)
 	}
 	return ("");
 }
+
+// std::string	Server::checkMode(Client &client, std::deque<std::string> data)
+// {
+	
+// }

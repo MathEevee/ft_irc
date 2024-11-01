@@ -6,17 +6,17 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:32:23 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/31 17:02:19 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/01 12:05:06 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Channel.hpp"
 
-Client*	Channel::findClientByNick(std::string sender, std::deque<Client> list)
+Client*	Channel::findClientByNick(std::string sender, std::deque<Client> &list)
 {
 	for (std::deque<Client>::iterator it = list.begin(); it != list.end(); it++)
 	{
-		if (it->getNickname() == sender)
+		if ((*it).getNickname() == sender)
 			return (&(*it));
 	}
 	return (NULL);
@@ -50,21 +50,33 @@ void	Channel::removeClient(Client &client)
 {
 	if (this->getModeI() == true)
 		this->deleteClient(client, this->getList());
+
 	deleteClient(client, this->getClientOp());
 	deleteClient(client, this->getAllClient());
 	this->sendAllClient(client, CHANNELLEAVE(client.getNickname(), client.getUsername(), client.getIp(), this->getName()));
+}
+
+Channel::Channel()
+{
+	setModeI(false);
+	setModeK(false);
+	setModeL(false);
+	setModeT(false);
+	setTopic("");
+	setPassword("");
+	setNbrClient(0);
 }
 
 Channel::Channel(std::string name, Client &new_client)
 {
 	setName(name);
 	
-	addClient(new_client, MSGJOIN(new_client.getNickname(), new_client.getUsername(), new_client.getIp(), name));
-	_mode_i = false;
-	_mode_k = false;
+	setModeI(false);
+	setModeK(false);
 	setModeL(false);
 	setModeT(false);
 	setTopic("");
+	addClient(new_client);
 	_mode_o.push_back(new_client);
 	_invite_list.push_back(new_client);
 	setPassword("");
@@ -92,6 +104,16 @@ void	Channel::setName(std::string name)
 void	Channel::setNbrClient(size_t nbr)
 {
 	this->_nbr_client = nbr;
+}
+
+void	Channel::setModeI(bool i)
+{
+	this->_mode_i = i;
+}
+
+void	Channel::setModeK(bool k)
+{
+	this->_mode_k = k;
 }
 
 void	Channel::setModeT(bool t)
@@ -164,13 +186,13 @@ std::string	Channel::getAllMode(void)
 {
 	std::string allMode = "+";
 	if (this->getModeK() == true)
-		allMode += "k";
+		allMode += std::string("k");
 	if (this->getModeI() == true)
-		allMode += "i";
+		allMode += std::string("i");
 	if (this->getModeL() == true)
-		allMode += "l";
+		allMode += std::string("l");
 	if (this->getModeT() == true)
-		allMode += "t";
+		allMode += std::string("t");
 	return (allMode);
 }
 
@@ -179,8 +201,13 @@ std::string	Channel::getAllUser(void)
 	std::string user;	
 	for (std::deque<Client>::iterator it = this->getAllClient().begin(); it != this->getAllClient().end(); it++)
 	{
+		Client *test = this->findClientByNick(it->getNickname(), this->getClientOp());
+		std::cout << test->getNickname() << std::endl;
 		if (this->findClientByNick(it->getNickname(), this->getClientOp()))
+		{
+			std::cout << "ici" << std::endl;
 			user += "@";
+		}
 		user += it->getNickname();
 		if (it != this->getAllClient().end())
 			user += " ";
@@ -204,7 +231,7 @@ void	Channel::sendMsgJoin(Client &client)
 	send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
 }
 
-void	Channel::addClient(Client &new_client, std::string msg)
+void	Channel::addClient(Client &new_client)
 {
 	this->_list_client.push_back(new_client);
 	this->sendAllClient(new_client, MSGJOIN(new_client.getNickname(), new_client.getUsername(), new_client.getIp(), this->getName()));

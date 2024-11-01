@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/30 17:46:12 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/01 11:42:20 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,12 +43,12 @@ void	Server::joinChannel(Client &client, Channel &channel) const
 	if (channel.getModeL() == true)
 	{
 		if (channel.getList().size() < channel.getNbrClient())
-			channel.addClient(client, MSGJOIN(client.getNickname(), client.getUsername(), client.getIp(), channel.getName()));
+			channel.addClient(client);
 		else
 			client.send_error(ERR_CHANNELISFULL(channel.getName()));
 	}
 	else
-		channel.addClient(client, MSGJOIN(client.getNickname(), client.getUsername(), client.getIp(), channel.getName()));
+		channel.addClient(client);
 }
 
 
@@ -163,7 +163,7 @@ void	Server::initialize_poll_fds(struct pollfd fds[NB_MAX_CLIENTS + 1])
 	}
 }
 
-Client*		Server::findClientByNick(std::string recipient)
+Client*	Server::findClientByNick(std::string recipient)
 {
 	for (std::vector<Client>::iterator it = this->_client_list.begin(); it != this->_client_list.end(); it++)
 	{
@@ -298,11 +298,8 @@ void	Server::commands_parsing(Client &client, std::string input)
 		checkPrivmsg(client, list_arg);
 	else if (list_arg[0] == "JOIN")
 		checkJoin(client, list_arg);
-	// else if ()
-	// else if ()
-	// else if ()
-	// else if ()
-
+	// else if (list_arg[0] == "MODE")
+	//	checkMode(client, list_arg)
 }
 
 Server::Server(int port, std::string password)
