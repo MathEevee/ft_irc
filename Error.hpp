@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 12:16:46 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/31 16:47:30 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/02 16:20:44 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,8 @@
 
 # define ERR_ALREADYREGISTRED "127.0.0.1 462 :You may not reregister\r\n"
 # define ERR_PASSWDMISMATCH "127.0.0.1 464 :Password incorrect\r\n"
-# define ERR_NEEDMOREPARAMS(cmd) "127.0.0.1 461 " + cmd + " :Not enough parameters\r\n"
-# define ERR_TOOMANYPARAMS(cmd) "127.0.0.1 460 " + cmd + " :Too many parameters\r\n"
+# define ERR_NEEDMOREPARAMS(name, cmd) "127.0.0.1 461 " + name + " " + cmd + " :Not enough parameters\r\n"
+# define ERR_TOOMANYPARAMS(name,cmd) "127.0.0.1 460 " + name + " " + cmd + " :Too many parameters\r\n"
 # define AUTHENTIFICATED(name) ":127.0.0.1 " + name + " :Your are authentificated\r\n"
 # define NOTAUTHENTIFICATED ":127.0.0.1 :Your are not authentificated\r\n"
 # define ERR_NOTREGISTERED ":127.0.0.1 451 :You have not registered\r\n"
@@ -26,7 +26,7 @@
 # define CHANGENICKNAMEFORALL(name, new_nickname) "127.0.0.1 " + name + " :Change his nickname to " + new_nickname + "\r\n"
 # define SELECTNICKNAME(name) "127.0.0.1 " + name + " :You have choose your Nickname\r\n"
 # define SELECTUSER(name) "127.0.0.1 " + name + " :You have choose your User and Realname\r\n"
-# define ERR_NOSUCHNICK(name) ":127.0.0.1 401 " + name + " :No such nick/channel\r\n"
+# define ERR_NOSUCHNICK(name, nameSuch) ":127.0.0.1 401 " + name + " " + nameSuch + " :No such nick/channel\r\n"
 # define ERR_NOSUCHCHANNEL(name) ":127.0.0.1 403 " + name + " :No such channel\r\n"
 # define ERR_NORECIPIENT(cmd) ":127.0.0.1 411 :No recipient given " + cmd + "\r\n"
 # define ERR_NOTEXTTOSEND ":127.0.0.1 412 :No text to send\r\n"
@@ -38,18 +38,31 @@
 # define MSGSEND(nameSender, userNameSender, ipSender, nickReceiver, msg) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " PRIVMSG " + nickReceiver + " " + msg + "\r\n"
 # define MSGJOIN(nameSender, userNameSender, ipSender, channel) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " JOIN " + channel + "\r\n"
 
-# define CHANNELLEAVE(nameSender, userNameSender, ipSender, channelReceiver) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " " + channelReceiver + " Leave\r\n"
+# define CHANNELLEAVE(nameSender, userNameSender, ipSender, channelReceiver) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " " + channelReceiver + " :Leave\r\n"
 # define USERDISCONNECTED(nameSender, userNameSender, ipSender, nickReceiver) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " " + nickReceiver + " Disconnected\r\n"
 
-# define CHANNELMODE(channel, msg) ":127.0.0.1 MODE " + channel + " " + msg + "\r\n"
-# define CHANNELLIST(name, channel, msg) ":127.0.0.1 353 " + name + " = " + channel + " :" + msg + "\r\n"
+# define CHANNELMODE(name, channel, msg) ":127.0.0.1 MODE " + name + " " + channel + " " + msg + "\r\n"
 # define CHANNELEND(name, channel) ":127.0.0.1 366 " + name + " " + channel + " :End of /NAMES list." + "\r\n"
 # define CHANELLTOPIC(name, channel, topic) ":127.0.0.1 332 " + name + " " + channel + " :" + topic + "\r\n"
-//add with join
-// S <-   :irc.example.com MODE #test +nt
-// S <-   :irc.example.com 353 dan = #test :@dan
-// S <-   :irc.example.com 366 dan #test :End of /NAMES list.
-// S <-   :irc.example.com 332 alice #test :This is my cool channel! https://irc.com
+# define ERR_UNKNOWNMODE(name, char) ":127.0.0.1 472 " + name + " " + char + " :is unknown mode char to me\r\n"
+// # define ERR_NOTONCHANNEL(name, channel) ":127.0.0.1 442 " + name + " " + channel + " :You're not on that channel\r\n"
+// # define ERR_USERNOTINCHANNEL(name, channel) ":127.0.0.1 441 " + name + " " + channel + " :You're not on that channel\r\n"
+// # define ERR_USERONCHANNEL(name, channel) ":127.0.0.1 443 " + name + " " + channel + " :is already on channel\r\n"
+// # define ERR_CHANOPRIVSNEEDED(name, channel) ":127.0.0.1 482 " + name + " " + channel + " :is already on channel\r\n"
+# define ERR_CHANNOTOPSNEEDED(name, channel) ":127.0.0.1 482 " + name + " " + channel + " :You're not a channel operator\r\n"
+# define ERR_KEYSET(name, channel) ":127.0.0.1 467 " + name + " " + channel + " :Channel key already set\r\n"
+# define CHANNELLIST(name, channel, msg) ":127.0.0.1 353 " + name + " @ " + channel + " :" + msg + "\r\n"
+// :lead.libera.chat 353 test_ @ #matde-ol :@test_
 
+// :tantalum.libera.chat 482 matde_ #matde :You're not a channel operator
+// :tantalum.libera.chat 482 matde_ #matde :You're not a channel operator
+// :matde_!~matde2@rtr.23.90.210.20.unyc.it MODE #matde +k salut
+// :matde_!~matde2@rtr.23.90.210.20.unyc.it MODE #matde +l 40
+// :matde_!~matde2@rtr.23.90.210.20.unyc.it MODE #matde -o matde_
+//invite =  :platinum.libera.chat 341 (nickname)test_ test__ #na
+        // 473     ERR_INVITEONLYCHAN
+                        // "<channel> :Cannot join channel (+i)"
 
+# define MSGOP(nameSender, userNameSender, ipSender, channel, newOp) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " MODE +o " + channel + newOp + "\r\n"
+// :test_!~matde@rtr.23.90.210.20.unyc.it MODE #matde-ol +o test__
 #endif

@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:25:59 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/01 10:50:09 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/02 14:34:04 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,8 @@ class Server
 		std::vector<Client>&	getListClient(void);
 
 		void					setPassword(std::string password);
+
+		bool					execMode(Client &client, std::deque<std::string> data, size_t &i, char token, char mode, Channel &channel);
 };
 
 std::deque<std::string>	splitCommand(std::string input);

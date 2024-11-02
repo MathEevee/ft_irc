@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/11/01 11:05:17 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/02 16:55:13 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,12 +15,13 @@
 std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 {
 	if (data.size() == 1)
-		return (client.send_error(ERR_NEEDMOREPARAMS(data[0])));
+		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 	else if (data.size() > 3)
-		return (client.send_error(ERR_TOOMANYPARAMS(data[0])));
+		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
 	
 	std::deque<std::string> list_channel = parsingMultiArgs(data[1]);
 	std::deque<std::string> list_password;
+
 	if (data.size() == 3)
 		list_password = parsingMultiArgs(data[2]);
 	size_t	i = 0;
@@ -63,10 +64,10 @@ std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 std::string	Server::checkPass(Client &client, std::deque<std::string> password)
 {
 	if (password.size() == 1)
-		return (client.send_error(ERR_NEEDMOREPARAMS(password[0])));
+		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), password[0])));
 
 	if (password.size() > 2)
-		return (client.send_error(ERR_TOOMANYPARAMS(password[0])));
+		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), password[0])));
 
 	if (password.size() == 2 && this->getPassword() == password[1] && client.getStatus() == 0)
 	{
@@ -84,13 +85,10 @@ std::string	Server::checkUser(Client& client, std::deque<std::string> data)
 	if (client.getRealName() != "")
 		return (client.send_error(ERR_ALREADYREGISTRED));
 
-	if (data.size() == 1)
-		return (client.send_error(ERR_NEEDMOREPARAMS(data[0])));
-	
 	if (data.size() < 5)
-		return (client.send_error(ERR_NEEDMOREPARAMS(data[0])));
+		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 	else if (data.size() > 5)
-		return (client.send_error(ERR_TOOMANYPARAMS(data[0])));
+		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
 
 	if (client.getUsername().size() != 0)
 			return (client.send_error(ERR_ALREADYREGISTRED));
@@ -98,7 +96,7 @@ std::string	Server::checkUser(Client& client, std::deque<std::string> data)
 	for (std::deque<std::string>::iterator it = data.begin(); it != data.end(); it++)
 	{
 		if ((*it).find('@') != std::string::npos || (*it).find('#') != std::string::npos)
-			return (client.send_error(ERR_TOOMANYPARAMS(data[0])));
+			return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
 	}
 
 	client.setUsername(data[1]);
@@ -106,7 +104,10 @@ std::string	Server::checkUser(Client& client, std::deque<std::string> data)
 	if (client.getNickname().size() != 0)
 		client.setStatus(true);
 	if (client.getUsername().size() != 0 && client.getNickname().size() != 0)
+	{
+		client.send_error(SELECTUSER(client.getUsername()));
 		return (client.send_error(AUTHENTIFICATED(client.getNickname())));
+	}
 	return (client.send_error(SELECTUSER(client.getUsername())));
 }
 
@@ -116,7 +117,7 @@ std::string	Server::checkNick(Client &client, std::deque<std::string> list_arg)
 		return (client.send_error(ERR_NONICKNAMEGIVEN));
 
 	if (list_arg[0].find('@') != std::string::npos || list_arg[0].find('#') != std::string::npos)
-		return (client.send_error(ERR_TOOMANYPARAMS(list_arg[0])));
+		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), list_arg[0])));
 
 	if (this->findClientByNick(list_arg[1]) != NULL)
 	{
@@ -153,7 +154,7 @@ std::string	Server::checkPrivmsg(Client &client, std::deque<std::string> data)
 	else if (receiver.size() == 1)
 		return (client.send_error(ERR_NOTEXTTOSEND));
 	else if (receiver.size() > 2)
-		return (client.send_error(ERR_TOOMANYPARAMS(data[0])));
+		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
 
 	receiver = parsingMultiArgs(data[1]);
 	msg_to_send = data[data.size() - 1];
@@ -168,7 +169,53 @@ std::string	Server::checkPrivmsg(Client &client, std::deque<std::string> data)
 	return ("");
 }
 
-// std::string	Server::checkMode(Client &client, std::deque<std::string> data)
-// {
+std::string	Server::checkMode(Client &client, std::deque<std::string> data)
+{
+	char	token = '+';
+	bool	is_op = true;
+
+	if (data.size() < 3)
+		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
+
+	if (this->findChannel(data[1]) == NULL)
+		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 	
-// }
+	if (this->findChannel(data[1])->findClientByNick(client.getNickname(), this->findChannel(data[1])->getClientOp()))//revoir cette condition
+		return (client.send_error(ERR_CHANNOTOPSNEEDED(client.getNickname(), data[1])));
+
+	size_t	i = 3;
+	for (std::string::iterator it = data[2].begin(); it != data[1].end(); it++)
+	{
+		if (*it == '-' || *it == '+')
+			token = *it;
+		else
+			is_op = this->execMode(client, data, i, token, *it, *this->findChannel(data[1]));
+	}
+	if (is_op == false)
+		this->findChannel(data[1])->removeOp(client, data, i);
+	return ("");
+}
+
+bool	Server::execMode(Client &client, std::deque<std::string> data, size_t &i, char token, char mode, Channel &channel)
+{
+	if (data.size() <= i && token == '+')
+		client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0]));
+	else if (mode == 'i')
+		channel.execModeI(client, token);
+	else if (mode == 't')
+		channel.execModeT(client, data, i, token);
+	else if (mode == 'k')
+		channel.execModeK(client, data, i, token);
+	else if (mode == 'o')
+	{
+		if (token == '-')
+			return (false);
+		else
+			channel.addOp(client, data, i);
+	}
+	else if (mode == 'l')
+		channel.execModeL(client, data, i, token);
+	else
+		client.send_error(ERR_UNKNOWNMODE(client.getNickname(), mode));
+	return (true);
+}

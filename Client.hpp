@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 18:36:54 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/01 10:39:19 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/02 11:13:35 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ class Client
 	public :
 		std::string		send_error(std::string msg_error);
 
+		Client();
 		Client(int socket_fd, std::string ip);
 		~Client();
 		Client(const Client &obj);

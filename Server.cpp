@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/01 11:42:20 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/02 16:38:46 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,6 @@ void	Server::createChannel(Client &client, std::string name)
 	Channel new_channel(name, client);
 	this->_channel_list.push_back(new_channel);
 }
-
 
 void	Server::joinChannel(Client &client, Channel &channel) const
 {
@@ -77,7 +76,7 @@ std::string Server::sendToChannel(Client &sender, std::string channel, std::stri
 	std::string	msg = MSGSEND(sender.getNickname(), sender.getUsername(), sender.getIp(), channel, msgToSend);
 	
 	if (this->findChannel(channel) == NULL)
-		return (sender.send_error(ERR_NOSUCHNICK(channel)));
+		return (sender.send_error(ERR_NOSUCHNICK(sender.getNickname(), channel)));
 
 	this->findChannel(channel)->sendAllClient(sender, msg);
 	return ("");
@@ -88,7 +87,7 @@ std::string Server::sendToClient(Client &sender, std::string receiver, std::stri
 	std::string	msg = MSGSEND(sender.getNickname(), sender.getUsername(), sender.getIp(), receiver, msgToSend);
 	
 	if (this->findClientByNick(receiver) == NULL)
-		return (sender.send_error(ERR_NOSUCHNICK(receiver)));
+		return (sender.send_error(ERR_NOSUCHNICK(sender.getNickname(), receiver)));
 	send(this->findClientByNick(receiver)->getSocketFd(), msg.c_str(), msg.size(), 0);
 	return ("");
 }
@@ -281,6 +280,8 @@ void	Server::commands_parsing(Client &client, std::string input)
 {
 	std::deque<std::string>		list_arg;
 
+	if (input.size() == 0)
+		return ;
 	list_arg = splitCommand(input);
 	if (list_arg[0] == "PASS")
 		checkPass(client, list_arg);
@@ -298,8 +299,8 @@ void	Server::commands_parsing(Client &client, std::string input)
 		checkPrivmsg(client, list_arg);
 	else if (list_arg[0] == "JOIN")
 		checkJoin(client, list_arg);
-	// else if (list_arg[0] == "MODE")
-	//	checkMode(client, list_arg)
+	else if (list_arg[0] == "MODE")
+		checkMode(client, list_arg);
 }
 
 Server::Server(int port, std::string password)

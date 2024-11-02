@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:21:48 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/01 12:02:41 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/02 16:30:01 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <iostream>
 # include <deque>
 # include "Client.hpp"
+# include "Server.hpp"
 # include "Error.hpp"
 
 class Channel
@@ -66,12 +67,20 @@ class Channel
 		void				setModeK(bool k);
 		
 		void				addClient(Client &new_client);
-		void				removeClient(Client &client);// remove all list
+		void				removeClient(Client &client);
 		void				deleteClient(Client &client, std::deque<Client> &list);
 		void				sendMsgJoin(Client &client);
+
+		std::string			removeOp(Client &client, std::deque<std::string> data, size_t &i);
+		std::string			addOp(Client &client, std::deque<std::string> data, size_t &i);
 		
 		std::string			sendAllClient(Client &sender, std::string msg);
 		Client*				findClientByNick(std::string sender, std::deque<Client> &list);
+
+		std::string			execModeI(Client &client, char token);
+		std::string			execModeT(Client &client, std::deque<std::string> data, size_t &i, char token);
+		std::string			execModeK(Client &client, std::deque<std::string> data, size_t &i, char token);
+		std::string			execModeL(Client &client, std::deque<std::string> data, size_t &i, char token);
 };
 
 #endif
