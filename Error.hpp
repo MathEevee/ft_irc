@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 12:16:46 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/02 16:20:44 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/04 17:11:10 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,9 @@
 # define CHANNELLEAVE(nameSender, userNameSender, ipSender, channelReceiver) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " " + channelReceiver + " :Leave\r\n"
 # define USERDISCONNECTED(nameSender, userNameSender, ipSender, nickReceiver) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " " + nickReceiver + " Disconnected\r\n"
 
+// :lithium.libera.chat MODE #matde-ol +Cnst
+# define CHANNELSETMODE(channel, msg) ":127.0.0.1 MODE " + channel + " " + msg + "\r\n"
+
 # define CHANNELMODE(name, channel, msg) ":127.0.0.1 MODE " + name + " " + channel + " " + msg + "\r\n"
 # define CHANNELEND(name, channel) ":127.0.0.1 366 " + name + " " + channel + " :End of /NAMES list." + "\r\n"
 # define CHANELLTOPIC(name, channel, topic) ":127.0.0.1 332 " + name + " " + channel + " :" + topic + "\r\n"
@@ -63,6 +66,6 @@
         // 473     ERR_INVITEONLYCHAN
                         // "<channel> :Cannot join channel (+i)"
 
-# define MSGOP(nameSender, userNameSender, ipSender, channel, newOp) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " MODE +o " + channel + newOp + "\r\n"
+# define MSGOP(nameSender, userNameSender, ipSender, channel, newOp) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " MODE +o " + channel + " " + newOp + "\r\n"
 // :test_!~matde@rtr.23.90.210.20.unyc.it MODE #matde-ol +o test__
 #endif

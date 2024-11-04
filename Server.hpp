@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:25:59 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/02 14:34:04 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/04 15:56:05 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ class Server
 	private :
 		int						_server_socket;
 		sockaddr_in 			_serverAddress;
-		std::vector<Client>		_client_list;
+		std::vector<Client*>	_client_list;
 		std::string				_password;
 		std::vector<Channel>	_channel_list;
 
@@ -87,11 +87,11 @@ class Server
 		int						getServerSocket();
 		std::string				getPassword(void);
 		std::vector<Channel>&	getListChannel(void);
-		std::vector<Client>&	getListClient(void);
+		std::vector<Client*>&	getListClient(void);
 
 		void					setPassword(std::string password);
 
-		bool					execMode(Client &client, std::deque<std::string> data, size_t &i, char token, char mode, Channel &channel);
+		void					execMode(Client &client, std::deque<std::string> data, size_t &i, char token, char mode, Channel &channel);
 };
 
 std::deque<std::string>	splitCommand(std::string input);

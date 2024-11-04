@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/11/02 16:55:13 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/04 16:18:18 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,8 @@ std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 			}
 			if (refChann->getModeK() == true)
 			{
-				if (i < list_password.size() && refChann->getPassword() != list_password[i])
+				if (i >= list_password.size() 
+				|| refChann->getPassword() != list_password[i])
 				{
 					client.send_error(ERR_BADCHANNELKEY(*it));
 					i++;
@@ -172,7 +173,6 @@ std::string	Server::checkPrivmsg(Client &client, std::deque<std::string> data)
 std::string	Server::checkMode(Client &client, std::deque<std::string> data)
 {
 	char	token = '+';
-	bool	is_op = true;
 
 	if (data.size() < 3)
 		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
@@ -180,25 +180,25 @@ std::string	Server::checkMode(Client &client, std::deque<std::string> data)
 	if (this->findChannel(data[1]) == NULL)
 		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 	
-	if (this->findChannel(data[1])->findClientByNick(client.getNickname(), this->findChannel(data[1])->getClientOp()))//revoir cette condition
+	if (this->findChannel(data[1])->findClientByNick(client.getNickname(), this->findChannel(data[1])->getClientOp()) == NULL)//revoir cette condition
 		return (client.send_error(ERR_CHANNOTOPSNEEDED(client.getNickname(), data[1])));
 
 	size_t	i = 3;
-	for (std::string::iterator it = data[2].begin(); it != data[1].end(); it++)
+	for (std::string::iterator it = data[2].begin(); it != data[2].end(); it++)
 	{
+		if (this->findChannel(data[1])->findClientByNick(client.getNickname(), this->findChannel(data[1])->getClientOp()) == NULL)//revoir cette condition
+			return (client.send_error(ERR_CHANNOTOPSNEEDED(client.getNickname(), data[1])));
 		if (*it == '-' || *it == '+')
 			token = *it;
 		else
-			is_op = this->execMode(client, data, i, token, *it, *this->findChannel(data[1]));
+			this->execMode(client, data, i, token, *it, *this->findChannel(data[1]));
 	}
-	if (is_op == false)
-		this->findChannel(data[1])->removeOp(client, data, i);
 	return ("");
 }
 
-bool	Server::execMode(Client &client, std::deque<std::string> data, size_t &i, char token, char mode, Channel &channel)
+void	Server::execMode(Client &client, std::deque<std::string> data, size_t &i, char token, char mode, Channel &channel)
 {
-	if (data.size() <= i && token == '+')
+	if (data.size() < i && token == '+')
 		client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0]));
 	else if (mode == 'i')
 		channel.execModeI(client, token);
@@ -209,7 +209,7 @@ bool	Server::execMode(Client &client, std::deque<std::string> data, size_t &i, c
 	else if (mode == 'o')
 	{
 		if (token == '-')
-			return (false);
+			channel.removeOp(client, data, i);
 		else
 			channel.addOp(client, data, i);
 	}
@@ -217,5 +217,4 @@ bool	Server::execMode(Client &client, std::deque<std::string> data, size_t &i, c
 		channel.execModeL(client, data, i, token);
 	else
 		client.send_error(ERR_UNKNOWNMODE(client.getNickname(), mode));
-	return (true);
 }

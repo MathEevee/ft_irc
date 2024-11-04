@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/02 16:38:46 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/04 16:20:54 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,12 @@ std::deque<std::string>	parsingMultiArgs(std::string data)
 void	Server::createChannel(Client &client, std::string name)
 {
 	Channel new_channel(name, client);
+
 	this->_channel_list.push_back(new_channel);
+	new_channel.print(client.getNickname(), new_channel.getAllClient(), "all clients");
+	new_channel.print(client.getNickname(), new_channel.getClientOp(), "op client");
+	new_channel.print(client.getNickname(), new_channel.getList(), "invit list");
+
 }
 
 void	Server::joinChannel(Client &client, Channel &channel) const
@@ -54,10 +59,10 @@ void	Server::joinChannel(Client &client, Channel &channel) const
 void	Server::sendToAllClient(Client &client, std::string new_nickname)
 {
 	std::string	toSend = CHANGENICKNAMEFORALL(client.getNickname(), new_nickname);
-	for (std::vector<Client>::iterator it = this->_client_list.begin(); it != this->_client_list.end(); it++)
+	for (std::vector<Client*>::iterator it = this->_client_list.begin(); it != this->_client_list.end(); it++)
 	{
-		if (it->getNickname() != client.getNickname())
-			send(it->getSocketFd(), toSend.c_str(), toSend.size(), 0);
+		if ((*it)->getNickname() != client.getNickname())
+			send((*it)->getSocketFd(), toSend.c_str(), toSend.size(), 0);
 	}
 }
 
@@ -78,7 +83,7 @@ std::string Server::sendToChannel(Client &sender, std::string channel, std::stri
 	if (this->findChannel(channel) == NULL)
 		return (sender.send_error(ERR_NOSUCHNICK(sender.getNickname(), channel)));
 
-	this->findChannel(channel)->sendAllClient(sender, msg);
+	this->findChannel(channel)->sendAllClientMsg(sender, msg);
 	return ("");
 }
 
@@ -153,9 +158,9 @@ void	Server::initialize_poll_fds(struct pollfd fds[NB_MAX_CLIENTS + 1])
 	fds[0].events = POLLIN;
 	fds[0].revents = 0;
 	int	i = 1;
-	for (std::vector<Client>::iterator it = _client_list.begin(); it != _client_list.end(); it++)
+	for (std::vector<Client*>::iterator it = _client_list.begin(); it != _client_list.end(); it++)
 	{
-		fds[i].fd = it->getSocketFd();
+		fds[i].fd = (*it)->getSocketFd();
 		fds[i].events = POLLIN;
 		fds[i].revents = 0;
 		i++;
@@ -164,10 +169,10 @@ void	Server::initialize_poll_fds(struct pollfd fds[NB_MAX_CLIENTS + 1])
 
 Client*	Server::findClientByNick(std::string recipient)
 {
-	for (std::vector<Client>::iterator it = this->_client_list.begin(); it != this->_client_list.end(); it++)
+	for (std::vector<Client*>::iterator it = this->_client_list.begin(); it != this->_client_list.end(); it++)
 	{
-		if (it->getNickname() == recipient)
-			return (&(*it));
+		if ((*it)->getNickname() == recipient)
+			return ((*it));
 	}
 	return (NULL);
 }
@@ -177,8 +182,7 @@ void	Server::leaveAllChannel(Client &client)
 	std::vector<Channel> &channels = this->getListChannel();
 	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end();)
 	{
-		if ((*it).findClientByNick(client.getNickname(), (*it).getAllClient()))
-			it->removeClient(client);
+		it->removeClient(client);
 		if (it->getAllClient().size() == 0)
 			it = channels.erase(it);
 		else
@@ -205,7 +209,7 @@ bool	Server::add_client()
 		{
 			char	ip[INET_ADDRSTRLEN];
 			inet_ntop(AF_INET, &addr, ip, INET_ADDRSTRLEN);
-			Client	new_client(clientSocket, ip);
+			Client	*new_client = new Client(clientSocket, ip);
 			this->_client_list.push_back(new_client);
 			std::cout << "New client connected.\r" << std::endl;
 			return (true);
@@ -216,11 +220,11 @@ bool	Server::add_client()
 
 void	Server::sendToAll(Client &client)
 {
-	for (std::vector<Client>::iterator it = this->getListClient().begin(); it != this->getListClient().end(); it++)
+	for (std::vector<Client*>::iterator it = this->getListClient().begin(); it != this->getListClient().end(); it++)
 	{
-		std::string	msgLeave = USERDISCONNECTED(client.getNickname(), client.getUsername(), client.getIp(), it->getNickname());
-		if (it->getNickname() != client.getNickname())
-			send(it->getSocketFd(), msgLeave.c_str(), msgLeave.size(), 0);
+		std::string	msgLeave = USERDISCONNECTED(client.getNickname(), client.getUsername(), client.getIp(), (*it)->getNickname());
+		if ((*it)->getNickname() != client.getNickname())
+			send((*it)->getSocketFd(), msgLeave.c_str(), msgLeave.size(), 0);
 	}
 }
 
@@ -230,9 +234,9 @@ void	Server::read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_cl
 	ssize_t size;
 	char	buffer[1024];
 
-	for (std::vector<Client>::iterator it = this->_client_list.begin(); it != this->_client_list.end() - new_client;)
+	for (std::vector<Client*>::iterator it = this->_client_list.begin(); it != this->_client_list.end() - new_client;)
 	{
-		std::string	message = it->getMessage();
+		std::string	message = (*it)->getMessage();
 
 		if ((fds[i].revents & POLLIN) != 0)
 		{
@@ -240,22 +244,23 @@ void	Server::read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_cl
 			{
 				size = recv(fds[i].fd, buffer, sizeof(buffer) - 1, 0);
 				if (size == 0)
-					it->setDisconnected(true);
+					(*it)->setDisconnected(true);
 				buffer[size] = 0;
 				message = message + buffer;
-				it->setMessage(message);
+				(*it)->setMessage(message);
 			} while (size == 1024);
 
-			this->process_commands(*it);
+			this->process_commands(**it);
 		}
 		i++;
 
-		if ((*it).getDisconnected() == false)
+		if ((*it)->getDisconnected() == false)
 			it++;
 		else
 		{
-			this->leaveAllChannel(*it);
-			this->sendToAll(*it);
+			this->leaveAllChannel(**it);
+			this->sendToAll(**it);
+			delete (*it);
 			it = this->_client_list.erase(it);
 		}
 	}
@@ -285,11 +290,11 @@ void	Server::commands_parsing(Client &client, std::string input)
 	list_arg = splitCommand(input);
 	if (list_arg[0] == "PASS")
 		checkPass(client, list_arg);
-	if (list_arg[0] == "USER")
+	if (client.getStatus() == true && list_arg[0] == "USER")
 		checkUser(client, list_arg);
-	else if (list_arg[0] == "NICK")
+	else if (client.getStatus() == true && list_arg[0] == "NICK")
 		checkNick(client, list_arg);
-	if (client.getStatus() == false && (list_arg[0] != "PASS" || list_arg[0] != "USER" || list_arg[0] != "USER"))
+	if (client.getStatus() == false)
 	{
 		std::string	msg = NOTAUTHENTIFICATED;
 		send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
@@ -319,13 +324,14 @@ Server::Server(int port, std::string password)
 
 Server::~Server()
 {
-	for (std::vector<Client>::iterator it = this->_client_list.begin(); it != this->_client_list.end(); it++)
+	for (std::vector<Client*>::iterator it = this->_client_list.begin(); it != this->_client_list.end(); it++)
 	{
-		close(it->getSocketFd());
+		close((*it)->getSocketFd());
+		delete (*it);
 	}
 }
 
-std::vector<Client>&	Server::getListClient(void)
+std::vector<Client*>&	Server::getListClient(void)
 {
 	return (this->_client_list);
 }

@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:32:23 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/02 16:32:24 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/04 17:10:37 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,18 +14,18 @@
 
 std::string	Channel::addOp(Client &client, std::deque<std::string> data, size_t &i)
 {
-	if (i < data.size())
+	if (i > data.size())
 		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 
 	std::deque<std::string>	list_user = parsingMultiArgs(data[i]);
-	for (std::deque<std::string>::iterator it = list_user.begin(); it != list_user.end();)
+	for (std::deque<std::string>::iterator it = list_user.begin(); it != list_user.end(); it++)
 	{
 		if (this->findClientByNick(*it, this->getAllClient()))
 		{
 			if (this->findClientByNick(*it, this->getClientOp()) == NULL)
 			{
 				client.send_error(MSGOP(client.getNickname(), client.getUsername(), client.getIp(), data[1], *it));
-				this->getClientOp().push_back(*findClientByNick(*it, this->getAllClient()));
+				this->getClientOp().push_back(findClientByNick(*it, this->getAllClient()));
 			}
 			else
 				client.send_error(ERR_NOSUCHNICK(client.getNickname(), *it));
@@ -39,11 +39,11 @@ std::string	Channel::addOp(Client &client, std::deque<std::string> data, size_t 
 
 std::string	Channel::removeOp(Client &client, std::deque<std::string> data, size_t &i)
 {
-	if (i < data.size())
+	if (i > data.size())
 		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 
 	std::deque<std::string>	list_user = parsingMultiArgs(data[i]);
-	for (std::deque<std::string>::iterator it = list_user.begin(); it != list_user.end();)
+	for (std::deque<std::string>::iterator it = list_user.begin(); it != list_user.end(); it++)
 	{
 		if (this->findClientByNick(*it, this->getAllClient()))
 		{
@@ -140,14 +140,38 @@ std::string	Channel::execModeL(Client &client, std::deque<std::string> data, siz
 	return ("");
 }
 
-Client*	Channel::findClientByNick(std::string sender, std::deque<Client> &list)
+void	Channel::print(std::string sender, std::deque<Client*> &list, std::string msg)
 {
-	for (std::deque<Client>::iterator it = list.begin(); it != list.end(); it++)
+	std::cout << sender << " : " << msg << std::endl;
+	for (std::deque<Client*>::iterator it = list.begin(); it != list.end(); it++)
 	{
-		if ((*it).getNickname() == sender)
-			return (&(*it));
+		std::cout << "nick name = " << (*it)->getNickname() << std::endl;	
+	}
+	std::cout << std::endl;
+	std::cout << std::endl;
+}
+
+Client*	Channel::findClientByNick(std::string sender, std::deque<Client*> &list)
+{
+	for (std::deque<Client*>::iterator it = list.begin(); it != list.end(); it++)
+	{
+		if ((*it)->getNickname() == sender)
+			return ((*it));
 	}
 	return (NULL);
+}
+
+std::string	Channel::sendAllClientMsg(Client &sender, std::string msg)
+{
+	if (this->findClientByNick(sender.getNickname(), this->_list_client) == NULL)
+		return (ERR_CANNOTSENDTOCHAN(this->getName()));
+
+	for (std::deque<Client*>::iterator it = this->_list_client.begin(); it != this->_list_client.end(); it++)
+	{
+		if (sender.getNickname() != (*it)->getNickname())
+			send((*it)->getSocketFd(), msg.c_str(), msg.size(), 0);
+	}
+	return ("");
 }
 
 std::string	Channel::sendAllClient(Client &sender, std::string msg)
@@ -155,18 +179,18 @@ std::string	Channel::sendAllClient(Client &sender, std::string msg)
 	if (this->findClientByNick(sender.getNickname(), this->_list_client) == NULL)
 		return (ERR_CANNOTSENDTOCHAN(this->getName()));
 
-	for (std::deque<Client>::iterator it = this->_list_client.begin(); it != this->_list_client.end(); it++)
+	for (std::deque<Client*>::iterator it = this->_list_client.begin(); it != this->_list_client.end(); it++)
 	{
-		send((*it).getSocketFd(), msg.c_str(), msg.size(), 0);
+		send((*it)->getSocketFd(), msg.c_str(), msg.size(), 0);
 	}
 	return ("");
 }
 
-void	Channel::deleteClient(Client &client, std::deque<Client> &list)
+void	Channel::deleteClient(Client &client, std::deque<Client*> &list)
 {
-	for (std::deque<Client>::iterator it = list.begin(); it != list.end(); it++)
+	for (std::deque<Client*>::iterator it = list.begin(); it != list.end(); it++)
 	{
-		if (it->getNickname() == client.getNickname())
+		if ((*it)->getNickname() == client.getNickname())
 		{
 			list.erase(it);
 			return ;
@@ -176,12 +200,16 @@ void	Channel::deleteClient(Client &client, std::deque<Client> &list)
 
 void	Channel::removeClient(Client &client)
 {
-	if (this->getModeI() == true)
+	if (this->getModeI() == true || this->findClientByNick(client.getNickname(), this->getList()) != NULL)
 		this->deleteClient(client, this->getList());
 
-	deleteClient(client, this->getClientOp());
-	deleteClient(client, this->getAllClient());
-	this->sendAllClient(client, CHANNELLEAVE(client.getNickname(), client.getUsername(), client.getIp(), this->getName()));
+	if (this->findClientByNick(client.getNickname(), this->getClientOp()) != NULL)
+		deleteClient(client, this->getClientOp());
+	if (this->findClientByNick(client.getNickname(), this->getAllClient()) != NULL)
+	{
+		this->sendAllClient(client, CHANNELLEAVE(client.getNickname(), client.getUsername(), client.getIp(), this->getName()));
+		deleteClient(client, this->getAllClient());
+	}
 }
 
 Channel::Channel()
@@ -204,9 +232,9 @@ Channel::Channel(std::string name, Client &new_client)
 	setModeL(false);
 	setModeT(false);
 	setTopic("");
+	_mode_o.push_back(&new_client);
+	// _list_client.push_back(&new_client);
 	addClient(new_client);
-	_mode_o.push_back(new_client);
-	_invite_list.push_back(new_client);
 	setPassword("");
 	setNbrClient(0);
 }
@@ -279,17 +307,17 @@ bool	Channel::getModeT(void)
 	return (this->_mode_t);
 }
 
-std::deque<Client>&	Channel::getList(void)
+std::deque<Client*>&	Channel::getList(void)
 {
 	return (this->_invite_list);
 }
 
-std::deque<Client>&	Channel::getClientOp(void)
+std::deque<Client*>&	Channel::getClientOp(void)
 {
 	return (this->_mode_o);
 }
 
-std::deque<Client>&	Channel::getAllClient(void)
+std::deque<Client*>&	Channel::getAllClient(void)
 {
 	return (this->_list_client);
 }
@@ -321,17 +349,20 @@ std::string	Channel::getAllMode(void)
 		allMode += std::string("l");
 	if (this->getModeT() == true)
 		allMode += std::string("t");
+	std::cout << allMode << std::endl;
 	return (allMode);
 }
 
 std::string	Channel::getAllUser(void)
 {
 	std::string user;	
-	for (std::deque<Client>::iterator it = this->getAllClient().begin(); it != this->getAllClient().end(); it++)
+	for (std::deque<Client*>::iterator it = this->getAllClient().begin(); it != this->getAllClient().end(); it++)
 	{
-		if (this->findClientByNick(it->getNickname(), this->getClientOp()))
+		if (it == this->getAllClient().end())
+			break;
+		if (this->findClientByNick((*it)->getNickname(), this->getClientOp()))
 			user += std::string("@");
-		user += std::string(it->getNickname());
+		user += std::string((*it)->getNickname());
 		if (it != this->getAllClient().end())
 			user += std::string(" ");
 	}
@@ -341,7 +372,7 @@ std::string	Channel::getAllUser(void)
 
 void	Channel::sendMsgJoin(Client &client)
 {
-	std::string	msg = CHANNELMODE(this->getName(), this->getAllMode(), this->getAllMode());
+	std::string	msg = CHANNELSETMODE(this->getName(), this->getAllMode());
 	send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
 	if (this->getModeT() == true)
 	{
@@ -356,7 +387,7 @@ void	Channel::sendMsgJoin(Client &client)
 
 void	Channel::addClient(Client &new_client)
 {
-	this->_list_client.push_back(new_client);
+	this->_list_client.push_back(&new_client);
 	this->sendAllClient(new_client, MSGJOIN(new_client.getNickname(), new_client.getUsername(), new_client.getIp(), this->getName()));
 	this->sendMsgJoin(new_client);
 }
