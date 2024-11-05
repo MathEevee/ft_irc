@@ -6,11 +6,101 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/11/04 16:18:18 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/05 17:15:48 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+
+void	Server::kick(Client &client, Channel &channel, std::string target, std::string msg)
+{
+	Client *kicked = this->findClientByNick(target);
+	
+	kicked->send_error(KICK(client.getNickname(), client.getUsername(), client.getIp(), target, channel.getName(), msg));
+	client.send_error(KICK(client.getNickname(), client.getUsername(), client.getIp(), target, channel.getName(), msg));
+	channel.deleteClient(*kicked, channel.getAllClient());
+}
+
+
+std::string	Server::checkKick(Client &client, std::deque<std::string> data)
+{
+	if (data.size() < 3)
+		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
+	else if (data.size() > 4)
+		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
+	
+	std::string	msg = "";
+	if (data.size() == 4)
+	{
+		if (data[4][0] != ':')
+			msg = ":" + data[3];
+		else
+			msg = data[3];
+	}
+	
+	std::deque<std::string>	channel = parsingMultiArgs(data[1]);
+	std::deque<std::string>	clients = parsingMultiArgs(data[2]);
+	
+	for (std::deque<std::string>::iterator it = channel.begin(); it != channel.end(); it++)
+	{
+		Channel *channel = this->findChannel(*it);
+		if (channel == NULL)
+		{
+			client.send_error(ERR_NOSUCHCHANNEL(*it));
+			continue;
+		}
+		if (channel->findClientByNick(client.getNickname(), channel->getAllClient()) == NULL)
+		{
+			client.send_error(ERR_NOTONCHANNEL(client.getNickname(), channel->getName()));
+			continue;
+		}
+		if (channel->findClientByNick(client.getNickname(), channel->getClientOp()) == NULL)
+		{
+			client.send_error(ERR_CHANNOTOPSNEEDED(client.getNickname(), channel->getName()));
+			continue;
+		}
+		for (std::deque<std::string>::iterator target = clients.begin(); target != clients.end(); target++)
+		{
+			if (channel->findClientByNick(*target, channel->getAllClient()) == NULL)
+				client.send_error(ERR_NOTONCHANNEL(client.getNickname(), *target));
+			else
+				kick(client, *channel, *target, msg);
+		}
+	}
+	return ("");
+}
+
+
+std::string	Server::checkInvite(Client &client, std::deque<std::string> data)
+{
+	if (data.size() == 1)
+		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
+	else if (data.size() > 3)
+		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
+	
+	if (this->findClientByNick(data[2]) == NULL)
+		return (client.send_error(ERR_NOSUCHNICK(client.getNickname(), data[2])));
+	
+	Channel *channel = this->findChannel(data[1]);
+
+	if (channel == NULL)
+		return (client.send_error(ERR_NOSUCHCHANNEL(data[1])));
+
+	if (channel->findClientByNick(client.getNickname(), this->findChannel(data[1])->getAllClient()) == NULL)
+		return (client.send_error(ERR_NOTONCHANNEL(client.getNickname(), data[1])));
+
+	if (channel->findClientByNick(client.getNickname(), this->findChannel(data[1])->getClientOp()) == NULL)
+		return (client.send_error(ERR_CHANNOTOPSNEEDED(client.getNickname(), data[1])));
+
+	if (channel->findClientByNick(data[2], this->findChannel(data[1])->getAllClient()) != NULL)
+		return (client.send_error(ERR_USERONCHANNEL(client.getNickname(), data[1])));
+
+	Client *receiver = this->findClientByNick(data[2]);
+
+	channel->getList().push_back(channel->findClientByNick(data[2], this->findChannel(data[1])->getAllClient()));
+	receiver->send_error(INVITE(receiver->getNickname(), receiver->getUsername(), receiver->getIp(), receiver->getNickname(), data[1]));
+	return (client.send_error(INVITESENDER(client.getNickname(), client.getUsername(), data[1])));
+}
 
 std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 {
@@ -24,6 +114,7 @@ std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 
 	if (data.size() == 3)
 		list_password = parsingMultiArgs(data[2]);
+
 	size_t	i = 0;
 	for (std::deque<std::string>::iterator it = list_channel.begin(); it != list_channel.end(); it++)
 	{
@@ -46,8 +137,7 @@ std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 			}
 			if (refChann->getModeK() == true)
 			{
-				if (i >= list_password.size() 
-				|| refChann->getPassword() != list_password[i])
+				if (i >= list_password.size() || refChann->getPassword() != list_password[i])
 				{
 					client.send_error(ERR_BADCHANNELKEY(*it));
 					i++;
@@ -55,6 +145,8 @@ std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 				}
 				i++;
 			}
+			if (refChann->findClientByNick(*it, refChann->getList()) != NULL)
+				refChann->deleteClient(client, refChann->getList());
 			this->joinChannel(client, *refChann);
 		}
 	}
@@ -170,6 +262,38 @@ std::string	Server::checkPrivmsg(Client &client, std::deque<std::string> data)
 	return ("");
 }
 
+std::string	Server::checkTopic(Client &client, std::deque<std::string> data)
+{
+	if (data.size() < 2)
+		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
+
+	if (this->findChannel(data[1]) == NULL)
+		return (client.send_error(ERR_NOSUCHCHANNEL(data[1])));
+
+	if (this->findChannel(data[1])->findClientByNick(client.getNickname(), this->findChannel(data[1])->getAllClient()) == NULL)
+		return (client.send_error(ERR_NOTONCHANNEL(client.getNickname(),data[1])));
+	
+	if (data.size() == 2)
+	{
+		if (this->findChannel(data[1])->getTopic().size() == 0)
+			return (client.send_error(RPL_NOTOPIC(data[1])));
+		else
+			return (client.send_error(RPL_TOPIC(data[1], this->findChannel(data[1])->getTopic())));
+	}
+
+	if (data.size() > 3)
+		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
+
+	if (data[2][0] != ':')
+	{
+		std::string	topic = ":" + data[2];
+		this->findChannel(data[1])->setTopic(topic);
+	}
+	else
+		this->findChannel(data[1])->setTopic(data[2]);
+	return (this->findChannel(data[1])->sendAllClient(client, CHANGEDTOPIC(client.getNickname(), client.getUsername(), client.getIp(), data[1], this->findChannel(data[1])->getTopic())));
+}
+
 std::string	Server::checkMode(Client &client, std::deque<std::string> data)
 {
 	char	token = '+';
@@ -178,15 +302,15 @@ std::string	Server::checkMode(Client &client, std::deque<std::string> data)
 		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 
 	if (this->findChannel(data[1]) == NULL)
-		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
+		return (client.send_error(ERR_NOSUCHCHANNEL(data[1])));
 	
-	if (this->findChannel(data[1])->findClientByNick(client.getNickname(), this->findChannel(data[1])->getClientOp()) == NULL)//revoir cette condition
+	if (this->findChannel(data[1])->findClientByNick(client.getNickname(), this->findChannel(data[1])->getClientOp()) == NULL)
 		return (client.send_error(ERR_CHANNOTOPSNEEDED(client.getNickname(), data[1])));
 
 	size_t	i = 3;
 	for (std::string::iterator it = data[2].begin(); it != data[2].end(); it++)
 	{
-		if (this->findChannel(data[1])->findClientByNick(client.getNickname(), this->findChannel(data[1])->getClientOp()) == NULL)//revoir cette condition
+		if (this->findChannel(data[1])->findClientByNick(client.getNickname(), this->findChannel(data[1])->getClientOp()) == NULL)
 			return (client.send_error(ERR_CHANNOTOPSNEEDED(client.getNickname(), data[1])));
 		if (*it == '-' || *it == '+')
 			token = *it;

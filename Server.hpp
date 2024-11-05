@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:25:59 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/04 15:56:05 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/05 16:47:04 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,12 @@ class Server
 		std::string	checkPrivmsg(Client &client, std::deque<std::string> data);
 		std::string	checkJoin(Client &client, std::deque<std::string> data);
 		std::string	checkMode(Client &client, std::deque<std::string> data);
+		std::string	checkInvite(Client &client, std::deque<std::string> data);
+		std::string	checkTopic(Client &client, std::deque<std::string> data);
+		std::string	checkKick(Client &client, std::deque<std::string> data);
+
+		void		kick(Client &client, Channel &channel, std::string target, std::string msg);
+
 
 		std::string sendToClient(Client &sender, std::string receiver, std::string msgToSend);
 		std::string sendToChannel(Client &sender, std::string channel, std::string msgToSend);

@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:32:23 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/04 17:10:37 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/05 17:23:16 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ std::string	Channel::addOp(Client &client, std::deque<std::string> data, size_t 
 				this->getClientOp().push_back(findClientByNick(*it, this->getAllClient()));
 			}
 			else
-				client.send_error(ERR_NOSUCHNICK(client.getNickname(), *it));
+				client.send_error(ERR_CHANALREADYOP(client.getNickname(), *it));
 		}
 		else
 			client.send_error(ERR_NOSUCHNICK(client.getNickname(), *it));
@@ -82,19 +82,17 @@ std::string Channel::execModeI(Client &client, char token)
 
 std::string Channel::execModeT(Client &client, std::deque<std::string> data, size_t &i, char token)
 {
+	if (i > data.size())
+		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
+
 	if (token == '+')
 	{
-		if (data[i].size() == 0)
-			return ("");
 		this->setModeT(true);
-		this->setTopic(data[i]);
-		i++;
 		return (sendAllClient(client, CHANNELMODE(client.getNickname(), this->getName(), "+t")));
 	}
 	else if (this->getModeT() == true && token == '-')
 	{
 		this->setModeT(false);
-		this->setTopic("");
 		return (sendAllClient(client, CHANNELMODE(client.getNickname(), this->getName(), "-t")));
 	}
 	return ("");
@@ -104,6 +102,8 @@ std::string Channel::execModeK(Client &client, std::deque<std::string> data, siz
 {
 	if (this->getModeK() == false && token == '+')
 	{
+		if (i > data.size() || data[i].size() == 0)
+			return ("");
 		this->setModeK(true);
 		this->setPassword(data[i]);
 		i++;
@@ -124,7 +124,7 @@ std::string	Channel::execModeL(Client &client, std::deque<std::string> data, siz
 {
 	if (token == '+')
 	{
-		if (std::atoll(data[i].c_str()) == 0)
+		if (std::atoll(data[i].c_str()) <= 0)
 			return ("");
 		this->setModeL(true);
 		this->setNbrClient(std::atoll(data[i].c_str()));
@@ -233,7 +233,6 @@ Channel::Channel(std::string name, Client &new_client)
 	setModeT(false);
 	setTopic("");
 	_mode_o.push_back(&new_client);
-	// _list_client.push_back(&new_client);
 	addClient(new_client);
 	setPassword("");
 	setNbrClient(0);
@@ -349,7 +348,6 @@ std::string	Channel::getAllMode(void)
 		allMode += std::string("l");
 	if (this->getModeT() == true)
 		allMode += std::string("t");
-	std::cout << allMode << std::endl;
 	return (allMode);
 }
 

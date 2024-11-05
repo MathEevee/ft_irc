@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 17:47:20 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/04 14:28:39 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/05 17:00:40 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,8 +133,6 @@ void	Client::setMessage(std::string message)
 {
 	this->_message_buffer = message;
 }
-
-
 
 void	Client::setDisconnected(bool status)
 {

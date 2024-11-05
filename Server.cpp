@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/04 16:20:54 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/05 16:55:13 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,10 +36,6 @@ void	Server::createChannel(Client &client, std::string name)
 	Channel new_channel(name, client);
 
 	this->_channel_list.push_back(new_channel);
-	new_channel.print(client.getNickname(), new_channel.getAllClient(), "all clients");
-	new_channel.print(client.getNickname(), new_channel.getClientOp(), "op client");
-	new_channel.print(client.getNickname(), new_channel.getList(), "invit list");
-
 }
 
 void	Server::joinChannel(Client &client, Channel &channel) const
@@ -54,7 +50,6 @@ void	Server::joinChannel(Client &client, Channel &channel) const
 	else
 		channel.addClient(client);
 }
-
 
 void	Server::sendToAllClient(Client &client, std::string new_nickname)
 {
@@ -306,6 +301,12 @@ void	Server::commands_parsing(Client &client, std::string input)
 		checkJoin(client, list_arg);
 	else if (list_arg[0] == "MODE")
 		checkMode(client, list_arg);
+	else if (list_arg[0] == "KICK")
+		checkKick(client, list_arg);
+	else if (list_arg[0] == "TOPIC")
+		checkTopic(client, list_arg);
+	else if (list_arg[0] == "INVITE")
+		checkInvite(client, list_arg);
 }
 
 Server::Server(int port, std::string password)
