@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/05 16:55:13 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/06 14:09:48 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -238,6 +238,11 @@ void	Server::read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_cl
 			do
 			{
 				size = recv(fds[i].fd, buffer, sizeof(buffer) - 1, 0);
+				if (size == -1)
+				{
+					(*it)->setDisconnected(true);
+					break;
+				}
 				if (size == 0)
 					(*it)->setDisconnected(true);
 				buffer[size] = 0;

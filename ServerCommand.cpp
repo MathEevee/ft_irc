@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/11/05 17:15:48 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/06 12:46:13 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,9 @@ void	Server::kick(Client &client, Channel &channel, std::string target, std::str
 {
 	Client *kicked = this->findClientByNick(target);
 	
+	channel.deleteClient(*kicked, channel.getAllClient());
 	kicked->send_error(KICK(client.getNickname(), client.getUsername(), client.getIp(), target, channel.getName(), msg));
 	client.send_error(KICK(client.getNickname(), client.getUsername(), client.getIp(), target, channel.getName(), msg));
-	channel.deleteClient(*kicked, channel.getAllClient());
 }
 
 
@@ -29,13 +29,20 @@ std::string	Server::checkKick(Client &client, std::deque<std::string> data)
 	else if (data.size() > 4)
 		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
 	
-	std::string	msg = "";
+	std::string	msg = " ";
 	if (data.size() == 4)
 	{
-		if (data[4][0] != ':')
-			msg = ":" + data[3];
+		if (data[3][0] != ':')
+			msg = " :" + data[3];
 		else
-			msg = data[3];
+			msg += data[3];
+	}
+	else
+	{
+		if (data[2][0] != ':')
+			msg = " :" + data[2];
+		else
+			msg += data[2];
 	}
 	
 	std::deque<std::string>	channel = parsingMultiArgs(data[1]);
@@ -310,6 +317,7 @@ std::string	Server::checkMode(Client &client, std::deque<std::string> data)
 	size_t	i = 3;
 	for (std::string::iterator it = data[2].begin(); it != data[2].end(); it++)
 	{
+		if (it == data[2].end())
 		if (this->findChannel(data[1])->findClientByNick(client.getNickname(), this->findChannel(data[1])->getClientOp()) == NULL)
 			return (client.send_error(ERR_CHANNOTOPSNEEDED(client.getNickname(), data[1])));
 		if (*it == '-' || *it == '+')
@@ -327,7 +335,7 @@ void	Server::execMode(Client &client, std::deque<std::string> data, size_t &i, c
 	else if (mode == 'i')
 		channel.execModeI(client, token);
 	else if (mode == 't')
-		channel.execModeT(client, data, i, token);
+		channel.execModeT(client, token);
 	else if (mode == 'k')
 		channel.execModeK(client, data, i, token);
 	else if (mode == 'o')

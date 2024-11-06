@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:32:23 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/05 17:23:16 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/06 14:56:52 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 std::string	Channel::addOp(Client &client, std::deque<std::string> data, size_t &i)
 {
-	if (i > data.size())
+	if (i >= data.size())
 		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 
 	std::deque<std::string>	list_user = parsingMultiArgs(data[i]);
@@ -49,7 +49,7 @@ std::string	Channel::removeOp(Client &client, std::deque<std::string> data, size
 		{
 			if (this->findClientByNick(*it, this->getClientOp()) != NULL)
 			{
-				client.send_error(CHANNELMODE(client.getNickname(), data[1], "-o"));
+				client.send_error(CHANNELMODE(data[1], "-o"));
 				this->deleteClient(*findClientByNick(*it, this->getAllClient()), this->getClientOp());
 			}
 			else
@@ -69,31 +69,28 @@ std::string Channel::execModeI(Client &client, char token)
 		if (this->getModeI() == true)
 			return ("");
 		this->setModeI(true);
-		return (sendAllClient(client, CHANNELMODE(client.getNickname(), this->getName(), "+i")));
+		return (sendAllClient(client, CHANNELMODE(this->getName(), "+i")));
 	}
 	else if (this->getModeI() == true && token == '-')
 	{
 		this->setModeI(false);
 		this->getList().clear();
-		return (sendAllClient(client, CHANNELMODE(client.getNickname(), this->getName(), "-i")));
+		return (sendAllClient(client, CHANNELMODE(this->getName(), "-i")));
 	}
 	return ("");
 }
 
-std::string Channel::execModeT(Client &client, std::deque<std::string> data, size_t &i, char token)
+std::string Channel::execModeT(Client &client, char token)
 {
-	if (i > data.size())
-		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
-
 	if (token == '+')
 	{
 		this->setModeT(true);
-		return (sendAllClient(client, CHANNELMODE(client.getNickname(), this->getName(), "+t")));
+		return (sendAllClient(client, CHANNELMODE(this->getName(), "+t")));
 	}
 	else if (this->getModeT() == true && token == '-')
 	{
 		this->setModeT(false);
-		return (sendAllClient(client, CHANNELMODE(client.getNickname(), this->getName(), "-t")));
+		return (sendAllClient(client, CHANNELMODE(this->getName(), "-t")));
 	}
 	return ("");
 }
@@ -107,13 +104,13 @@ std::string Channel::execModeK(Client &client, std::deque<std::string> data, siz
 		this->setModeK(true);
 		this->setPassword(data[i]);
 		i++;
-		return (sendAllClient(client, CHANNELMODE(client.getNickname(), this->getName(), "+k")));
+		return (sendAllClient(client, CHANNELMODE(this->getName(), "+k")));
 	}
 	else if (this->getModeK() == true && token == '-')
 	{
 		this->setModeK(false);
 		this->setTopic("");
-		return (sendAllClient(client, CHANNELMODE(client.getNickname(), this->getName(), "-k")));
+		return (sendAllClient(client, CHANNELMODE(this->getName(), "-k")));
 	}
 	else if (this->getModeK() == true && token == '+')
 		return (sendAllClient(client, ERR_KEYSET(client.getNickname(), this->getName())));
@@ -129,13 +126,13 @@ std::string	Channel::execModeL(Client &client, std::deque<std::string> data, siz
 		this->setModeL(true);
 		this->setNbrClient(std::atoll(data[i].c_str()));
 		i++;
-		return (sendAllClient(client, CHANNELMODE(client.getNickname(), this->getName(), "+l")));
+		return (sendAllClient(client, CHANNELMODE(this->getName(), "+l")));
 	}
 	else if (this->getModeL() == true && token == '-')
 	{
 		this->setModeL(false);
 		this->setNbrClient(0);
-		return (sendAllClient(client, CHANNELMODE(client.getNickname(), this->getName(), "-l")));
+		return (sendAllClient(client, CHANNELMODE(this->getName(), "-l")));
 	}
 	return ("");
 }
@@ -370,15 +367,18 @@ std::string	Channel::getAllUser(void)
 
 void	Channel::sendMsgJoin(Client &client)
 {
-	std::string	msg = CHANNELSETMODE(this->getName(), this->getAllMode());
+	std::string	msg = CHANNELMODE(this->getName(), this->getAllMode());
+	send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
+	msg = CHANNELLIST(client.getNickname(), this->getName(),this->getAllUser());
 	send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
 	if (this->getModeT() == true)
 	{
-		msg = CHANELLTOPIC(client.getNickname(), this->getName(), this->getTopic());
+		if (this->getTopic().size() == 0)
+			msg = RPL_NOTOPIC(this->getName());
+		else
+			msg = RPL_TOPIC(this->getName(), this->getTopic());
 		send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
 	}
-	msg = CHANNELLIST(client.getNickname(), this->getName(),this->getAllUser());
-	send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
 	msg = CHANNELEND(client.getNickname(), this->getName());
 	send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
 }

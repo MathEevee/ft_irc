@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:21:48 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/05 12:15:08 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/06 12:44:45 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ class Channel
 
 
 		std::string				execModeI(Client &client, char token);
-		std::string				execModeT(Client &client, std::deque<std::string> data, size_t &i, char token);
+		std::string				execModeT(Client &client, char token);
 		std::string				execModeK(Client &client, std::deque<std::string> data, size_t &i, char token);
 		std::string				execModeL(Client &client, std::deque<std::string> data, size_t &i, char token);
 };

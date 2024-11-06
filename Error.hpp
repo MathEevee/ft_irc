@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 12:16:46 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/05 17:20:18 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/06 14:56:50 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,12 +41,10 @@
 # define CHANNELLEAVE(nameSender, userNameSender, ipSender, channelReceiver) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " " + channelReceiver + " :Leave\r\n"
 # define USERDISCONNECTED(nameSender, userNameSender, ipSender, nickReceiver) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " " + nickReceiver + " Disconnected\r\n"
 
-# define CHANNELSETMODE(channel, msg) ":127.0.0.1 MODE " + channel + " " + msg + "\r\n"
-
-# define CHANNELMODE(name, channel, msg) ":127.0.0.1 MODE " + name + " " + channel + " " + msg + "\r\n"
+# define CHANNELMODE(channel, msg) ":127.0.0.1 MODE " + channel + " " + msg + "\r\n"
 # define CHANNELEND(name, channel) ":127.0.0.1 366 " + name + " " + channel + " :End of /NAMES list." + "\r\n"
 
-# define RPL_TOPIC(channel, topic) ":127.0.0.1 332 " + channel + topic + "\r\n"
+# define RPL_TOPIC(channel, topic) ":127.0.0.1 332 " + channel + " " + topic + "\r\n"
 # define RPL_NOTOPIC(channel) ":127.0.0.1 331 " + channel + " :No topic is set\r\n"
 # define CHANELLTOPIC(name, channel, topic) ":127.0.0.1 " + name + " " + channel + " " + topic + "\r\n"
 # define CHANGEDTOPIC(nameSender, userNameSender, ipSender, channel, topic) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " TOPIC " + channel + " " + topic + "\r\n"
@@ -54,7 +52,7 @@
 # define INVITE(nameReceiver, userNameReceiver, ipReceiver, invited, channel) ":" + nameReceiver + "!" + userNameReceiver + "@" + ipReceiver + " INVITE " + invited + " :" + channel + "\r\n" //(receiver)
 # define INVITESENDER(nameSender, nameReceiver, channel) ":127.0.0.1 341 " + nameSender + " " + nameReceiver + " " + channel + "\r\n"
 
-# define KICK(nameReceiver, userNameReceiver, ipReceiver, kicked, channel, msg) ":" + nameReceiver + "!" + userNameReceiver + "@" + ipReceiver + " KICK " + kicked + " " + channel + " " + msg + "\r\n" //(receiver)
+# define KICK(nameReceiver, userNameReceiver, ipReceiver, userKicked, channel, msg) ":" + nameReceiver + "!" + userNameReceiver + "@" + ipReceiver + " KICK " + channel + " " + userKicked + msg + "\r\n" //(receiver)
 
 // :ouais!~ouais@rtr.23.90.210.20.unyc.it KICK #jefaisdestests salut :salut (sender ouais)
 
@@ -62,7 +60,6 @@
 
 # define ERR_UNKNOWNMODE(name, char) ":127.0.0.1 472 " + name + " " + char + " :is unknown mode char to me\r\n"
 # define ERR_NOTONCHANNEL(name, channel) ":127.0.0.1 442 " + name + " " + channel + " :You're not on that channel\r\n"
-// # define ERR_USERNOTINCHANNEL(name, channel) ":127.0.0.1 441 " + name + " " + channel + " :You're not on that channel\r\n"
 # define ERR_USERONCHANNEL(name, channel) ":127.0.0.1 443 " + name + " " + channel + " :is already on channel\r\n"
 # define ERR_CHANALREADYOP(name, channel) ":127.0.0.1 482 " + name + " " + channel + " :is already on channel\r\n"
 # define ERR_CHANNOTOPSNEEDED(name, channel) ":127.0.0.1 482 " + name + " " + channel + " :You're not a channel operator\r\n"
@@ -70,6 +67,8 @@
 # define CHANNELLIST(name, channel, msg) ":127.0.0.1 353 " + name + " @ " + channel + " :" + msg + "\r\n"
 
 
-# define MSGOP(nameSender, userNameSender, ipSender, channel, newOp) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " MODE +o " + channel + " " + newOp + "\r\n"
+# define MSGOP(nameSender, userNameSender, ipSender, channel, newOp) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " MODE " + channel + " +o " + newOp + "\r\n"
+// :matde_!~matde@rtr.23.90.210.20.unyc.it MODE #matde-ol +o test__
+//  :matde!matde@0.0.0.0 #a MODE +o a
 
 #endif
