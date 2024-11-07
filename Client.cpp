@@ -6,12 +6,12 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 17:47:20 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/06 13:59:27 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/07 10:44:09 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
-#include <exception>
+
 std::string	Client::send_error(std::string msg_error)
 {
 	send(this->getSocketFd(), msg_error.c_str(), msg_error.size(), 0);
@@ -27,7 +27,6 @@ Client::Client()
 	this->setStatus(0);
 	this->setSocketFd(-1);
 	this->setDisconnected(false);
-	throw new std::exception();
 }
 
 Client::Client(int socket_fd, std::string ip)

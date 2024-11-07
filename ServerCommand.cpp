@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/11/06 12:46:13 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/07 17:40:18 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,14 @@ void	Server::kick(Client &client, Channel &channel, std::string target, std::str
 {
 	Client *kicked = this->findClientByNick(target);
 	
+	if (channel.findClientByNick(target, channel.getClientOp()) != NULL)
+	{
+		channel.sendAllClient(client, MSGOP(client.getNickname(), client.getUsername(), client.getIp(), channel.getName(), "-o", target));
+		channel.deleteClient(*findClientByNick(target), channel.getClientOp());
+	}
 	channel.deleteClient(*kicked, channel.getAllClient());
 	kicked->send_error(KICK(client.getNickname(), client.getUsername(), client.getIp(), target, channel.getName(), msg));
-	client.send_error(KICK(client.getNickname(), client.getUsername(), client.getIp(), target, channel.getName(), msg));
+	channel.sendAllClient(client, KICK(client.getNickname(), client.getUsername(), client.getIp(), target, channel.getName(), msg));
 }
 
 
@@ -73,6 +78,7 @@ std::string	Server::checkKick(Client &client, std::deque<std::string> data)
 			else
 				kick(client, *channel, *target, msg);
 		}
+		//delete le channel
 	}
 	return ("");
 }
@@ -104,9 +110,10 @@ std::string	Server::checkInvite(Client &client, std::deque<std::string> data)
 
 	Client *receiver = this->findClientByNick(data[2]);
 
-	channel->getList().push_back(channel->findClientByNick(data[2], this->findChannel(data[1])->getAllClient()));
-	receiver->send_error(INVITE(receiver->getNickname(), receiver->getUsername(), receiver->getIp(), receiver->getNickname(), data[1]));
-	return (client.send_error(INVITESENDER(client.getNickname(), client.getUsername(), data[1])));
+	channel->getList().push_back(receiver);
+	channel->print(client.getNickname(), channel->getList(), "list invite");
+	receiver->send_error(INVITE(client.getNickname(), client.getUsername(), client.getIp(), receiver->getNickname(), data[1]));
+	return (client.send_error(INVITESENDER(client.getNickname(), data[2], data[1])));
 }
 
 std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
@@ -136,8 +143,9 @@ std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 			Channel	*refChann = this->findChannel(*it);
 			if (refChann->getModeI() == true)
 			{
-				if (refChann->findClientByNick(*it, refChann->getList()) == NULL)
+				if (refChann->findClientByNick(client.getNickname(), refChann->getList()) == NULL)
 				{
+					refChann->print(client.getNickname(), refChann->getList(), "check sortie");
 					client.send_error(ERR_INVITEONLYCHAN(*it));
 					continue ;
 				}
@@ -285,7 +293,7 @@ std::string	Server::checkTopic(Client &client, std::deque<std::string> data)
 		if (this->findChannel(data[1])->getTopic().size() == 0)
 			return (client.send_error(RPL_NOTOPIC(data[1])));
 		else
-			return (client.send_error(RPL_TOPIC(data[1], this->findChannel(data[1])->getTopic())));
+			return (client.send_error(RPL_TOPIC(client.getNickname(), data[1], this->findChannel(data[1])->getTopic())));
 	}
 
 	if (data.size() > 3)
@@ -305,11 +313,15 @@ std::string	Server::checkMode(Client &client, std::deque<std::string> data)
 {
 	char	token = '+';
 
-	if (data.size() < 3)
+
+	if (data.size() < 2)
 		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 
 	if (this->findChannel(data[1]) == NULL)
 		return (client.send_error(ERR_NOSUCHCHANNEL(data[1])));
+
+	if (data.size() == 2)
+		return (client.send_error(CHANNELMODE(client.getNickname(), this->findChannel(data[1])->getName(), this->findChannel(data[1])->getAllMode())));
 	
 	if (this->findChannel(data[1])->findClientByNick(client.getNickname(), this->findChannel(data[1])->getClientOp()) == NULL)
 		return (client.send_error(ERR_CHANNOTOPSNEEDED(client.getNickname(), data[1])));

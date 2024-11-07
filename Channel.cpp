@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:32:23 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/06 14:56:52 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/07 16:33:52 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ std::string	Channel::addOp(Client &client, std::deque<std::string> data, size_t 
 		{
 			if (this->findClientByNick(*it, this->getClientOp()) == NULL)
 			{
-				client.send_error(MSGOP(client.getNickname(), client.getUsername(), client.getIp(), data[1], *it));
+				this->sendAllClient(client, MSGOP(client.getNickname(), client.getUsername(), client.getIp(), data[1], "+o", *it));
 				this->getClientOp().push_back(findClientByNick(*it, this->getAllClient()));
 			}
 			else
@@ -39,7 +39,7 @@ std::string	Channel::addOp(Client &client, std::deque<std::string> data, size_t 
 
 std::string	Channel::removeOp(Client &client, std::deque<std::string> data, size_t &i)
 {
-	if (i > data.size())
+	if (i >= data.size())
 		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 
 	std::deque<std::string>	list_user = parsingMultiArgs(data[i]);
@@ -49,7 +49,7 @@ std::string	Channel::removeOp(Client &client, std::deque<std::string> data, size
 		{
 			if (this->findClientByNick(*it, this->getClientOp()) != NULL)
 			{
-				client.send_error(CHANNELMODE(data[1], "-o"));
+				this->sendAllClient(client, MSGOP(client.getNickname(), client.getUsername(), client.getIp(), data[1], "-o", *it));
 				this->deleteClient(*findClientByNick(*it, this->getAllClient()), this->getClientOp());
 			}
 			else
@@ -69,13 +69,13 @@ std::string Channel::execModeI(Client &client, char token)
 		if (this->getModeI() == true)
 			return ("");
 		this->setModeI(true);
-		return (sendAllClient(client, CHANNELMODE(this->getName(), "+i")));
+		return (sendAllClient(client, CHANNELMODEJOIN(this->getName(), "+i")));
 	}
 	else if (this->getModeI() == true && token == '-')
 	{
 		this->setModeI(false);
 		this->getList().clear();
-		return (sendAllClient(client, CHANNELMODE(this->getName(), "-i")));
+		return (sendAllClient(client, CHANNELMODEJOIN(this->getName(), "-i")));
 	}
 	return ("");
 }
@@ -85,12 +85,12 @@ std::string Channel::execModeT(Client &client, char token)
 	if (token == '+')
 	{
 		this->setModeT(true);
-		return (sendAllClient(client, CHANNELMODE(this->getName(), "+t")));
+		return (sendAllClient(client, CHANNELMODEJOIN(this->getName(), "+t")));
 	}
 	else if (this->getModeT() == true && token == '-')
 	{
 		this->setModeT(false);
-		return (sendAllClient(client, CHANNELMODE(this->getName(), "-t")));
+		return (sendAllClient(client, CHANNELMODEJOIN(this->getName(), "-t")));
 	}
 	return ("");
 }
@@ -99,18 +99,18 @@ std::string Channel::execModeK(Client &client, std::deque<std::string> data, siz
 {
 	if (this->getModeK() == false && token == '+')
 	{
-		if (i > data.size() || data[i].size() == 0)
+		if (i >= data.size() || data[i].size() == 0)
 			return ("");
 		this->setModeK(true);
 		this->setPassword(data[i]);
 		i++;
-		return (sendAllClient(client, CHANNELMODE(this->getName(), "+k")));
+		return (sendAllClient(client, CHANNELMODEJOIN(this->getName(), "+k")));
 	}
 	else if (this->getModeK() == true && token == '-')
 	{
 		this->setModeK(false);
 		this->setTopic("");
-		return (sendAllClient(client, CHANNELMODE(this->getName(), "-k")));
+		return (sendAllClient(client, CHANNELMODEJOIN(this->getName(), "-k")));
 	}
 	else if (this->getModeK() == true && token == '+')
 		return (sendAllClient(client, ERR_KEYSET(client.getNickname(), this->getName())));
@@ -121,18 +121,21 @@ std::string	Channel::execModeL(Client &client, std::deque<std::string> data, siz
 {
 	if (token == '+')
 	{
+		if (i >= data.size())
+			return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 		if (std::atoll(data[i].c_str()) <= 0)
 			return ("");
 		this->setModeL(true);
 		this->setNbrClient(std::atoll(data[i].c_str()));
+		std::string	nbClient = data[i];
 		i++;
-		return (sendAllClient(client, CHANNELMODE(this->getName(), "+l")));
+		return (sendAllClient(client, MSGOP(client.getNickname(), client.getUsername(), client.getIp(), data[1], "+l", nbClient)));
 	}
 	else if (this->getModeL() == true && token == '-')
 	{
 		this->setModeL(false);
 		this->setNbrClient(0);
-		return (sendAllClient(client, CHANNELMODE(this->getName(), "-l")));
+		return (sendAllClient(client, CHANNELMODEJOIN(this->getName(), "-l")));
 	}
 	return ("");
 }
@@ -152,6 +155,11 @@ Client*	Channel::findClientByNick(std::string sender, std::deque<Client*> &list)
 {
 	for (std::deque<Client*>::iterator it = list.begin(); it != list.end(); it++)
 	{
+		if (*it == NULL)
+		{
+			std::cout << "NULL" << std::endl;
+			continue;
+		}
 		if ((*it)->getNickname() == sender)
 			return ((*it));
 	}
@@ -367,7 +375,7 @@ std::string	Channel::getAllUser(void)
 
 void	Channel::sendMsgJoin(Client &client)
 {
-	std::string	msg = CHANNELMODE(this->getName(), this->getAllMode());
+	std::string	msg = CHANNELMODEJOIN(this->getName(), this->getAllMode());
 	send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
 	msg = CHANNELLIST(client.getNickname(), this->getName(),this->getAllUser());
 	send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
@@ -376,7 +384,7 @@ void	Channel::sendMsgJoin(Client &client)
 		if (this->getTopic().size() == 0)
 			msg = RPL_NOTOPIC(this->getName());
 		else
-			msg = RPL_TOPIC(this->getName(), this->getTopic());
+			msg = RPL_TOPIC(client.getNickname(), this->getName(), this->getTopic());
 		send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
 	}
 	msg = CHANNELEND(client.getNickname(), this->getName());

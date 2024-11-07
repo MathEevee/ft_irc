@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/06 14:09:48 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/07 17:02:10 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,17 +17,17 @@ std::deque<std::string>	parsingMultiArgs(std::string data)
 	std::deque<std::string> tab;
 
 	size_t found = data.find(',');
-	std::string	receiver = data.substr(0, found);
-	tab.push_back(receiver);
+	std::string	receiver;
 	while (found != std::string::npos)
 	{
+		receiver = data.substr(0, found);
+		data = data.substr(found + 1);
+		found = data.find(',');
 		if (receiver.size() != 0)
 			tab.push_back(receiver);
-		receiver = data.substr(found + 1, data.find(',', found) + 1);
-		found = data.find(',', found + receiver.size());
 	}
-	if (receiver != tab[tab.size() - 1])
-		tab.push_back(receiver);
+	if (data.size() != 0)
+		tab.push_back(data);
 	return (tab);
 }
 
@@ -42,13 +42,10 @@ void	Server::joinChannel(Client &client, Channel &channel) const
 {
 	if (channel.getModeL() == true)
 	{
-		if (channel.getList().size() < channel.getNbrClient())
-			channel.addClient(client);
-		else
-			client.send_error(ERR_CHANNELISFULL(channel.getName()));
+		if (channel.getAllClient().size() >= channel.getNbrClient())
+			client.send_error(ERR_CHANNELISFULL(client.getNickname(), channel.getName()));
 	}
-	else
-		channel.addClient(client);
+	channel.addClient(client);
 }
 
 void	Server::sendToAllClient(Client &client, std::string new_nickname)
@@ -74,7 +71,7 @@ Channel*	Server::findChannel(std::string channel)
 std::string Server::sendToChannel(Client &sender, std::string channel, std::string msgToSend)
 {
 	std::string	msg = MSGSEND(sender.getNickname(), sender.getUsername(), sender.getIp(), channel, msgToSend);
-	
+
 	if (this->findChannel(channel) == NULL)
 		return (sender.send_error(ERR_NOSUCHNICK(sender.getNickname(), channel)));
 
