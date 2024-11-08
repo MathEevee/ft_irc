@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/11/07 17:40:18 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/08 09:52:26 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@ void	Server::kick(Client &client, Channel &channel, std::string target, std::str
 	channel.deleteClient(*kicked, channel.getAllClient());
 	kicked->send_error(KICK(client.getNickname(), client.getUsername(), client.getIp(), target, channel.getName(), msg));
 	channel.sendAllClient(client, KICK(client.getNickname(), client.getUsername(), client.getIp(), target, channel.getName(), msg));
+	this->checkDeleteChannel();
+
 }
 
 
@@ -78,7 +80,6 @@ std::string	Server::checkKick(Client &client, std::deque<std::string> data)
 			else
 				kick(client, *channel, *target, msg);
 		}
-		//delete le channel
 	}
 	return ("");
 }

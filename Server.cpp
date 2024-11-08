@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/07 17:02:10 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/08 09:59:08 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,19 @@ void	Server::createChannel(Client &client, std::string name)
 
 	this->_channel_list.push_back(new_channel);
 }
+
+void	Server::checkDeleteChannel(void)
+{
+	std::vector<Channel> &channels = this->getListChannel();
+	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end();)
+	{
+		if (it->getAllClient().size() == 0)
+			it = channels.erase(it);
+		else
+			it++;
+	}
+}
+
 
 void	Server::joinChannel(Client &client, Channel &channel) const
 {
@@ -172,13 +185,9 @@ Client*	Server::findClientByNick(std::string recipient)
 void	Server::leaveAllChannel(Client &client)
 {
 	std::vector<Channel> &channels = this->getListChannel();
-	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end();)
+	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); it++)
 	{
 		it->removeClient(client);
-		if (it->getAllClient().size() == 0)
-			it = channels.erase(it);
-		else
-			it++;
 	}
 }
 
@@ -256,6 +265,7 @@ void	Server::read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_cl
 		else
 		{
 			this->leaveAllChannel(**it);
+			this->checkDeleteChannel();
 			this->sendToAll(**it);
 			delete (*it);
 			it = this->_client_list.erase(it);
