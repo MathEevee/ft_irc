@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/08 09:59:08 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/20 16:45:46 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,15 +50,19 @@ void	Server::checkDeleteChannel(void)
 	}
 }
 
+//TODO +l
 
 void	Server::joinChannel(Client &client, Channel &channel) const
 {
 	if (channel.getModeL() == true)
 	{
-		if (channel.getAllClient().size() >= channel.getNbrClient())
+		if (channel.getAllClient().size() < channel.getNbrClient())
+			channel.addClient(client);
+		else
 			client.send_error(ERR_CHANNELISFULL(client.getNickname(), channel.getName()));
 	}
-	channel.addClient(client);
+	else
+		channel.addClient(client);
 }
 
 void	Server::sendToAllClient(Client &client, std::string new_nickname)
@@ -181,7 +185,7 @@ Client*	Server::findClientByNick(std::string recipient)
 	}
 	return (NULL);
 }
-
+//TODO test remove if disconnected
 void	Server::leaveAllChannel(Client &client)
 {
 	std::vector<Channel> &channels = this->getListChannel();
@@ -319,6 +323,7 @@ void	Server::commands_parsing(Client &client, std::string input)
 		checkTopic(client, list_arg);
 	else if (list_arg[0] == "INVITE")
 		checkInvite(client, list_arg);
+	//TODO else command not found
 }
 
 Server::Server(int port, std::string password)

@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:32:23 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/07 16:33:52 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/20 16:50:48 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,7 +139,7 @@ std::string	Channel::execModeL(Client &client, std::deque<std::string> data, siz
 	}
 	return ("");
 }
-
+//TODO remove
 void	Channel::print(std::string sender, std::deque<Client*> &list, std::string msg)
 {
 	std::cout << sender << " : " << msg << std::endl;
@@ -209,7 +209,10 @@ void	Channel::removeClient(Client &client)
 		this->deleteClient(client, this->getList());
 
 	if (this->findClientByNick(client.getNickname(), this->getClientOp()) != NULL)
+	{
+		//TODO send msg to remove op
 		deleteClient(client, this->getClientOp());
+	}
 	if (this->findClientByNick(client.getNickname(), this->getAllClient()) != NULL)
 	{
 		this->sendAllClient(client, CHANNELLEAVE(client.getNickname(), client.getUsername(), client.getIp(), this->getName()));
