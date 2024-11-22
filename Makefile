@@ -3,34 +3,42 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+         #
+#    By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/11/01 10:37:02 by matde-ol          #+#    #+#              #
-#    Updated: 2024/11/01 10:38:09 by matde-ol         ###   ########.fr        #
+#    Created: 2024/06/04 14:46:49 by ede-lang          #+#    #+#              #
+#    Updated: 2024/11/22 13:46:20 by ede-lang         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME = ircserv
-CC = c++
-FLAGS = -Wall -Wextra -Werror -std=c++98 -g
-SRCS = main.cpp Channel.cpp Client.cpp Server.cpp ServerCommand.cpp
+SRCDIR		:= ./src
+OBJDIR		:= ./obj
 
-OBJ = $(SRCS:.cpp=.o)
+NAME	:= ircserv
+CC		:= c++
+SRCS 	:= main.cpp Channel.cpp Client.cpp Server.cpp ServerCommand.cpp
+OBJS	:= $(addprefix $(OBJDIR)/, $(SRCS:.cpp=.o))
 
-all : $(NAME)
+CFLAGS	:= -Wextra -Wall -Werror -g -std=c++98
 
-$(NAME) : $(OBJ)
-	@$(CC) $(OBJ) -o $(NAME)
 
-%.o : %.cpp
-	@$(CC) $(FLAGS) -c $< -o $@
+all: $(NAME)
 
-clean :
-	rm -f $(OBJ)
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+	@test -d $(OBJDIR) || mkdir $(OBJDIR)
+	@$(CC) $(CFLAGS) -o $@ -c $< && printf "$(GREEN)✔️ $(notdir $<) compiled\n"
 
-fclean : clean
-	@rm -f $(NAME)
+$(NAME): $(OBJS)
+	@$(CC) $(OBJS) -o $(NAME)
 
-re : fclean all
+$(OBJDIR):
+	mkdir -p $@
 
-.PHONY : all clean fclean re
+clean:
+	@rm -rf $(OBJDIR)
+
+fclean: clean
+	@rm -rf $(NAME)
+
+re: clean all
+
+.PHONY: all, clean, fclean, re, valgrind, run%  
