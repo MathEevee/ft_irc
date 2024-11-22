@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Error.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 12:16:46 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/07 16:52:15 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/22 15:12:15 by ede-lang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,10 @@
 # define ERR_NOTREGISTERED ":127.0.0.1 451 :You have not registered\r\n"
 # define ERR_NICKNAMEINUSE(name) ":127.0.0.1 433 " + name + " :Nickname is already in use\r\n"
 # define ERR_NONICKNAMEGIVEN "127.0.0.1 431 :No nickname given\r\n"
-# define CHANGENICKNAME(name) "127.0.0.1 " + name + " :You have change your Nickname\r\n"
+
+# define CHANGENICKNAME(name) "127.0.0.1 " + name + " :You have changed your Nickname\r\n"
 # define CHANGENICKNAMEFORALL(name, new_nickname) "127.0.0.1 " + name + " :Change his nickname to " + new_nickname + "\r\n"
+// ":ede-lang!~ede-lang@rtr.23.90.210.20.unyc.it NICK :coco"
 # define SELECTNICKNAME(name) "127.0.0.1 " + name + " :You have choose your Nickname\r\n"
 # define SELECTUSER(name) "127.0.0.1 " + name + " :You have choose your User and Realname\r\n"
 # define ERR_NOSUCHNICK(name, nameSuch) ":127.0.0.1 401 " + name + " " + nameSuch + " :No such nick/channel\r\n"

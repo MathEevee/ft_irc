@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerCommand.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/11/20 16:49:10 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/22 14:08:01 by ede-lang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -242,13 +242,15 @@ std::string	Server::checkNick(Client &client, std::deque<std::string> list_arg)
 
 	if (client.getStatus() == true)
 		this->sendToAllClient(client, list_arg[1]);
+
+	std::cout << "New nick : " << list_arg[1] << std::endl;
 	client.setNickname(list_arg[1]);
 	if (client.getUsername().size() != 0 && client.getStatus() == false)
 	{
 		client.setStatus(true);
 		return (client.send_error(AUTHENTIFICATED(client.getNickname())));
 	}
-	return (client.send_error(CHANGENICKNAME(client.getNickname()))); 
+	return (client.send_error(CHANGENICKNAME(client.getNickname()))); //TODO Verify
 }
 
 std::string	Server::checkPrivmsg(Client &client, std::deque<std::string> data)
