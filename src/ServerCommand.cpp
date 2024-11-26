@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerCommand.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
+/*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/11/22 14:08:01 by ede-lang         ###   ########.fr       */
+/*   Updated: 2024/11/26 15:07:53 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -222,18 +222,16 @@ std::string	Server::checkUser(Client& client, std::deque<std::string> data)
 
 std::string	Server::checkNick(Client &client, std::deque<std::string> list_arg)
 {
+
 	if (list_arg.size() == 1 || list_arg[1] == "")
 		return (client.send_error(ERR_NONICKNAMEGIVEN));
 
-	if (list_arg[0].find('@') != std::string::npos || list_arg[0].find('#') != std::string::npos)
-		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), list_arg[0])));
-
 	if (this->findClientByNick(list_arg[1]) != NULL)
-	{
-		client.setDisconnected(true);
-		return (client.send_error(ERR_NICKNAMEINUSE(list_arg[0])));
-	}
-	
+		return (client.send_error(ERR_NICKNAMEINUSE(list_arg[1])));
+
+	if (list_arg[1].find('@') != std::string::npos || list_arg[1].find('#') != std::string::npos)
+		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), list_arg[1])));
+
 	if (client.getNickname().size() == 0)
 	{
 		client.setNickname(list_arg[1]);
@@ -243,7 +241,6 @@ std::string	Server::checkNick(Client &client, std::deque<std::string> list_arg)
 	if (client.getStatus() == true)
 		this->sendToAllClient(client, list_arg[1]);
 
-	std::cout << "New nick : " << list_arg[1] << std::endl;
 	client.setNickname(list_arg[1]);
 	if (client.getUsername().size() != 0 && client.getStatus() == false)
 	{
@@ -315,7 +312,6 @@ std::string	Server::checkTopic(Client &client, std::deque<std::string> data)
 std::string	Server::checkMode(Client &client, std::deque<std::string> data)
 {
 	char	token = '+';
-
 
 	if (data.size() < 2)
 		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));

@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:32:23 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/20 16:50:48 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/26 15:19:56 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,7 @@ std::string Channel::execModeK(Client &client, std::deque<std::string> data, siz
 	else if (this->getModeK() == true && token == '-')
 	{
 		this->setModeK(false);
-		this->setTopic("");
+		this->setPassword("");
 		return (sendAllClient(client, CHANNELMODEJOIN(this->getName(), "-k")));
 	}
 	else if (this->getModeK() == true && token == '+')
@@ -127,9 +127,7 @@ std::string	Channel::execModeL(Client &client, std::deque<std::string> data, siz
 			return ("");
 		this->setModeL(true);
 		this->setNbrClient(std::atoll(data[i].c_str()));
-		std::string	nbClient = data[i];
-		i++;
-		return (sendAllClient(client, MSGOP(client.getNickname(), client.getUsername(), client.getIp(), data[1], "+l", nbClient)));
+		return (sendAllClient(client, MSGOP(client.getNickname(), client.getUsername(), client.getIp(), data[1], "+l", data[i++])));
 	}
 	else if (this->getModeL() == true && token == '-')
 	{
@@ -155,11 +153,6 @@ Client*	Channel::findClientByNick(std::string sender, std::deque<Client*> &list)
 {
 	for (std::deque<Client*>::iterator it = list.begin(); it != list.end(); it++)
 	{
-		if (*it == NULL)
-		{
-			std::cout << "NULL" << std::endl;
-			continue;
-		}
 		if ((*it)->getNickname() == sender)
 			return ((*it));
 	}
@@ -210,11 +203,12 @@ void	Channel::removeClient(Client &client)
 
 	if (this->findClientByNick(client.getNickname(), this->getClientOp()) != NULL)
 	{
-		//TODO send msg to remove op
+		this->sendAllClient(client, MSGOP(client.getNickname(), client.getUsername(), client.getIp(), this->getName(), "-o", client.getNickname()));
 		deleteClient(client, this->getClientOp());
 	}
 	if (this->findClientByNick(client.getNickname(), this->getAllClient()) != NULL)
 	{
+		this->sendAllClient(client, QUIT(client.getNickname(), client.getUsername(), client.getIp()));
 		this->sendAllClient(client, CHANNELLEAVE(client.getNickname(), client.getUsername(), client.getIp(), this->getName()));
 		deleteClient(client, this->getAllClient());
 	}

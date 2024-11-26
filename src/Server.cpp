@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/20 16:45:46 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/26 15:01:37 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,11 +67,10 @@ void	Server::joinChannel(Client &client, Channel &channel) const
 
 void	Server::sendToAllClient(Client &client, std::string new_nickname)
 {
-	std::string	toSend = CHANGENICKNAMEFORALL(client.getNickname(), new_nickname);
+	std::string	toSend = CHANGENICKNAMEFORALL(client.getNickname(), client.getUsername(), client.getIp(), new_nickname);
 	for (std::vector<Client*>::iterator it = this->_client_list.begin(); it != this->_client_list.end(); it++)
 	{
-		if ((*it)->getNickname() != client.getNickname())
-			send((*it)->getSocketFd(), toSend.c_str(), toSend.size(), 0);
+		send((*it)->getSocketFd(), toSend.c_str(), toSend.size(), 0);
 	}
 }
 
@@ -305,7 +304,7 @@ void	Server::commands_parsing(Client &client, std::string input)
 		checkUser(client, list_arg);
 	else if (client.getStatus() == true && list_arg[0] == "NICK")
 		checkNick(client, list_arg);
-	if (client.getStatus() == false)
+	if (client.getStatus() == false || client.getNickname().size() == 0 || client.getUsername().size() == 0)
 	{
 		std::string	msg = NOTAUTHENTIFICATED;
 		send(client.getSocketFd(), msg.c_str(), msg.size(), 0);

@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 17:47:20 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/07 10:44:09 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/26 15:22:17 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,6 @@ Client::Client(int socket_fd, std::string ip)
 	this->setStatus(0);
 	this->setSocketFd(socket_fd);
 	this->setDisconnected(false);
-	// set other elements?
 }
 
 Client::~Client()

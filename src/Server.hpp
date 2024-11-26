@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:25:59 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/08 09:39:33 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/26 14:27:06 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,9 +71,6 @@ class Server
 		void		sendToAllClient(Client &client, std::string new_nickname);
 
 		void		checkDeleteChannel(void);
-
-		// void		connexionFull(void);
-
 
 
 	public :
