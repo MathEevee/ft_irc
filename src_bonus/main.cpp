@@ -3,26 +3,34 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/09/26 17:40:59 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/10/22 17:13:08 by matde-ol         ###   ########.fr       */
+/*   Created: 2024/11/27 16:15:35 by ede-lang          #+#    #+#             */
+/*   Updated: 2024/11/27 16:47:20 by ede-lang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include <csignal>
-# include "Server.hpp"
+#include "bot.hpp"
 
-void	handler(int num)
+bool verif_param(char *argv[])
 {
-	(void) num;
+	//TODO param parsing
+	(void) argv;
+	return (true);
 }
 
-int main(int ac, char **av)
+int main(int argc, char *argv[])
 {
-	if (ac != 3){
-		std::cerr << "Error: invalid number of argument!" << std::endl; return (0);}
-	signal(SIGINT, handler);
-	Server	serv(std::atoi(av[1]), av[2]);
-    close(serv.getServerSocket());
+	if (argc != 4)
+	{
+		std::cout << "usage : ./bot <botname> <port> <pass>" << std::endl;
+		return (1);
+	}
+	if(verif_param(argv))
+	{
+		bot robot(argv[1], atoi(argv[2]), argv[3]);
+		robot.runtime();
+	}
+
+	return 0;
 }
