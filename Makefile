@@ -6,7 +6,7 @@
 #    By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/06/04 14:46:49 by ede-lang          #+#    #+#              #
-#    Updated: 2024/11/27 16:20:01 by ede-lang         ###   ########.fr        #
+#    Updated: 2024/11/27 17:21:05 by ede-lang         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -50,6 +50,12 @@ fclean: clean
 	@rm -rf $(NAME)
 	@rm -rf $(NAME_B)
 
+cleanb: 
+	@rm -rf $(OBJDIRB)
+	@rm -rf $(NAME_B)
+
 re: clean all
+
+bonusre : cleanb bonus
 
 .PHONY: all, clean, fclean, re, bonus 

@@ -6,7 +6,7 @@
 /*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/27 16:17:26 by ede-lang          #+#    #+#             */
-/*   Updated: 2024/11/27 16:51:35 by ede-lang         ###   ########.fr       */
+/*   Updated: 2024/11/27 17:30:20 by ede-lang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,9 @@
 # include <arpa/inet.h>
 # include <stdlib.h>
 
-# define BOTCONNEXION(pass, name) "PASS " + pass + "\r\nNICK " + name + "\r\nUSER " + name + "_ 0 * " + name + "\r\n"
+# define PASS(pass) "PASS " + pass + "\r\n"
+# define NICK(name) "NICK " + name + "\r\n"
+# define USER(name) "USER " + name + "_ 0 * " + name + "\r\n"
 
 class bot
 {
@@ -36,6 +38,7 @@ class bot
 		void runtime();
 
 		int	getBotSocket() const;
+		bool connectServer();
 };
 
 #endif
