@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:32:23 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/26 15:19:56 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/26 16:02:44 by ede-lang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,6 +214,35 @@ void	Channel::removeClient(Client &client)
 	}
 }
 
+void	Channel::sendMsgJoin(Client &client)
+{
+	std::string	msg = CHANNELMODEJOIN(this->getName(), this->getAllMode());
+	send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
+	msg = CHANNELLIST(client.getNickname(), this->getName(),this->getAllUser());
+	send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
+	if (this->getModeT() == true)
+	{
+		if (this->getTopic().size() == 0)
+			msg = RPL_NOTOPIC(this->getName());
+		else
+			msg = RPL_TOPIC(client.getNickname(), this->getName(), this->getTopic());
+		send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
+	}
+	msg = CHANNELEND(client.getNickname(), this->getName());
+	send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
+}
+
+void	Channel::addClient(Client &new_client)
+{
+	this->_list_client.push_back(&new_client);
+	this->sendAllClient(new_client, MSGJOIN(new_client.getNickname(), new_client.getUsername(), new_client.getIp(), this->getName()));
+	this->sendMsgJoin(new_client);
+}
+
+//////////////////////////////////////////////////////
+//				  (CONS/DES)TRUCTOR					//
+//////////////////////////////////////////////////////
+
 Channel::Channel()
 {
 	setModeI(false);
@@ -240,104 +269,42 @@ Channel::Channel(std::string name, Client &new_client)
 	setNbrClient(0);
 }
 
-Channel::~Channel()
-{}
-		
-std::string	Channel::getName(void)
-{
-	return (this->_name);
-}
+Channel::~Channel() {}
 
-void	Channel::setPassword(std::string password)
-{
-	this->_password = password;
-}
+//////////////////////////////////////////////////////
+//						SETTERS						//
+//////////////////////////////////////////////////////
 
-void	Channel::setName(std::string name)
-{
-	this->_name = name;
-}
+void	Channel::setName(std::string name) {this->_name = name;}
+void	Channel::setPassword(std::string password) {this->_password = password;}
+void	Channel::setNbrClient(size_t nbr) {	this->_nbr_client = nbr;}
 
-void	Channel::setNbrClient(size_t nbr)
-{
-	this->_nbr_client = nbr;
-}
-
-void	Channel::setModeI(bool i)
-{
-	this->_mode_i = i;
-}
-
-void	Channel::setModeK(bool k)
-{
-	this->_mode_k = k;
-}
-
-void	Channel::setModeT(bool t)
-{
-	this->_mode_t = t;
-}
-
-void	Channel::setModeL(bool l)
-{
-	this->_mode_l = l;
-}
-
-void	Channel::setTopic(std::string topic)
-{
-	this->_topic = topic;
-}
-
-bool	Channel::getModeK(void)
-{
-	return (this->_mode_k);
-}
-
-bool	Channel::getModeI(void)
-{
-	return (this->_mode_i);
-}
-
-bool	Channel::getModeL(void)
-{
-	return (this->_mode_l);
-}
-
-bool	Channel::getModeT(void)
-{
-	return (this->_mode_t);
-}
-
-std::deque<Client*>&	Channel::getList(void)
-{
-	return (this->_invite_list);
-}
-
-std::deque<Client*>&	Channel::getClientOp(void)
-{
-	return (this->_mode_o);
-}
-
-std::deque<Client*>&	Channel::getAllClient(void)
-{
-	return (this->_list_client);
-}
-
-size_t	Channel::getNbrClient(void)
-{
-	return (this->_nbr_client);
-}
+void	Channel::setModeI(bool i) {	this->_mode_i = i;}
+void	Channel::setModeK(bool k) {	this->_mode_k = k;}
+void	Channel::setModeT(bool t) {	this->_mode_t = t;}
+void	Channel::setModeL(bool l) { this->_mode_l = l;}
+void	Channel::setTopic(std::string topic) { this->_topic = topic;}
 
 
-std::string	Channel::getPassword(void)
-{
-	return (this->_password);
-}
+//////////////////////////////////////////////////////
+//						GETTERS						//
+//////////////////////////////////////////////////////
 
-std::string	Channel::getTopic(void)
-{
-	return (this->_topic);
-}
+std::string	Channel::getName(void) {return (this->_name);}
+std::string	Channel::getPassword(void) { return (this->_password);}
+
+bool	Channel::getModeI(void) { return (this->_mode_i);}
+bool	Channel::getModeK(void) { return (this->_mode_k);}
+bool	Channel::getModeT(void) { return (this->_mode_t);}
+bool	Channel::getModeL(void) { return (this->_mode_l);}
+
+std::deque<Client*>&	Channel::getList(void) { return (this->_invite_list);}
+std::deque<Client*>&	Channel::getClientOp(void) { return (this->_mode_o);}
+std::deque<Client*>&	Channel::getAllClient(void) { return (this->_list_client);}
+
+size_t	Channel::getNbrClient(void) { return (this->_nbr_client);}
+
+std::string	Channel::getTopic(void) { return (this->_topic);}
 
 std::string	Channel::getAllMode(void)
 {
@@ -370,27 +337,3 @@ std::string	Channel::getAllUser(void)
 }
 
 
-void	Channel::sendMsgJoin(Client &client)
-{
-	std::string	msg = CHANNELMODEJOIN(this->getName(), this->getAllMode());
-	send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
-	msg = CHANNELLIST(client.getNickname(), this->getName(),this->getAllUser());
-	send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
-	if (this->getModeT() == true)
-	{
-		if (this->getTopic().size() == 0)
-			msg = RPL_NOTOPIC(this->getName());
-		else
-			msg = RPL_TOPIC(client.getNickname(), this->getName(), this->getTopic());
-		send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
-	}
-	msg = CHANNELEND(client.getNickname(), this->getName());
-	send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
-}
-
-void	Channel::addClient(Client &new_client)
-{
-	this->_list_client.push_back(&new_client);
-	this->sendAllClient(new_client, MSGJOIN(new_client.getNickname(), new_client.getUsername(), new_client.getIp(), this->getName()));
-	this->sendMsgJoin(new_client);
-}
