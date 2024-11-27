@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/11/26 15:07:53 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/27 13:26:54 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -328,8 +328,6 @@ std::string	Server::checkMode(Client &client, std::deque<std::string> data)
 	size_t	i = 3;
 	for (std::string::iterator it = data[2].begin(); it != data[2].end(); it++)
 	{
-		if (it == data[2].end())
-			//TODO return ?
 		if (this->findChannel(data[1])->findClientByNick(client.getNickname(), this->findChannel(data[1])->getClientOp()) == NULL)
 			return (client.send_error(ERR_CHANNOTOPSNEEDED(client.getNickname(), data[1])));
 		if (*it == '-' || *it == '+')
@@ -346,6 +344,8 @@ void	Server::execMode(Client &client, std::deque<std::string> data, size_t &i, c
 		channel.execModeI(client, token);
 	else if (mode == 't')
 		channel.execModeT(client, token);
+	else if (mode == 'l')
+		channel.execModeL(client, data, i, token);
 	else if (data.size() < i && token == '+')
 		client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0]));
 	else if (mode == 'k')
@@ -357,8 +357,6 @@ void	Server::execMode(Client &client, std::deque<std::string> data, size_t &i, c
 		else
 			channel.addOp(client, data, i);
 	}
-	else if (mode == 'l')
-		channel.execModeL(client, data, i, token);
 	else
 		client.send_error(ERR_UNKNOWNMODE(client.getNickname(), mode));
 }
