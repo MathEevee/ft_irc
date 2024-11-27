@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
+/*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:32:23 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/26 16:02:44 by ede-lang         ###   ########.fr       */
+/*   Updated: 2024/11/27 13:42:19 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ std::string	Channel::addOp(Client &client, std::deque<std::string> data, size_t 
 		{
 			if (this->findClientByNick(*it, this->getClientOp()) == NULL)
 			{
-				this->sendAllClient(client, MSGOP(client.getNickname(), client.getUsername(), client.getIp(), data[1], "+o", *it));
+				this->sendAllClient(client, MSGPARAM(client.getNickname(), client.getUsername(), client.getIp(), data[1], "+o", *it));
 				this->getClientOp().push_back(findClientByNick(*it, this->getAllClient()));
 			}
 			else
@@ -49,7 +49,7 @@ std::string	Channel::removeOp(Client &client, std::deque<std::string> data, size
 		{
 			if (this->findClientByNick(*it, this->getClientOp()) != NULL)
 			{
-				this->sendAllClient(client, MSGOP(client.getNickname(), client.getUsername(), client.getIp(), data[1], "-o", *it));
+				this->sendAllClient(client, MSGPARAM(client.getNickname(), client.getUsername(), client.getIp(), data[1], "-o", *it));
 				this->deleteClient(*findClientByNick(*it, this->getAllClient()), this->getClientOp());
 			}
 			else
@@ -103,8 +103,7 @@ std::string Channel::execModeK(Client &client, std::deque<std::string> data, siz
 			return ("");
 		this->setModeK(true);
 		this->setPassword(data[i]);
-		i++;
-		return (sendAllClient(client, CHANNELMODEJOIN(this->getName(), "+k")));
+		return (sendAllClient(client, MSGPARAM(client.getNickname(), client.getUsername(), client.getIp(), data[1], "+k", data[i++])));
 	}
 	else if (this->getModeK() == true && token == '-')
 	{
@@ -127,7 +126,7 @@ std::string	Channel::execModeL(Client &client, std::deque<std::string> data, siz
 			return ("");
 		this->setModeL(true);
 		this->setNbrClient(std::atoll(data[i].c_str()));
-		return (sendAllClient(client, MSGOP(client.getNickname(), client.getUsername(), client.getIp(), data[1], "+l", data[i++])));
+		return (sendAllClient(client, MSGPARAM(client.getNickname(), client.getUsername(), client.getIp(), data[1], "+l", data[i++])));
 	}
 	else if (this->getModeL() == true && token == '-')
 	{
@@ -203,7 +202,7 @@ void	Channel::removeClient(Client &client)
 
 	if (this->findClientByNick(client.getNickname(), this->getClientOp()) != NULL)
 	{
-		this->sendAllClient(client, MSGOP(client.getNickname(), client.getUsername(), client.getIp(), this->getName(), "-o", client.getNickname()));
+		this->sendAllClient(client, MSGPARAM(client.getNickname(), client.getUsername(), client.getIp(), this->getName(), "-o", client.getNickname()));
 		deleteClient(client, this->getClientOp());
 	}
 	if (this->findClientByNick(client.getNickname(), this->getAllClient()) != NULL)

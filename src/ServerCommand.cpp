@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/11/27 13:26:54 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/27 13:49:19 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ void	Server::kick(Client &client, Channel &channel, std::string target, std::str
 	
 	if (channel.findClientByNick(target, channel.getClientOp()) != NULL)
 	{
-		channel.sendAllClient(client, MSGOP(client.getNickname(), client.getUsername(), client.getIp(), channel.getName(), "-o", target));
+		channel.sendAllClient(client, MSGPARAM(client.getNickname(), client.getUsername(), client.getIp(), channel.getName(), "-o", target));
 		channel.deleteClient(*findClientByNick(target), channel.getClientOp());
 	}
 	channel.deleteClient(*kicked, channel.getAllClient());
@@ -112,7 +112,6 @@ std::string	Server::checkInvite(Client &client, std::deque<std::string> data)
 	Client *receiver = this->findClientByNick(data[2]);
 
 	channel->getList().push_back(receiver);
-	channel->print(client.getNickname(), channel->getList(), "list invite");
 	receiver->send_error(INVITE(client.getNickname(), client.getUsername(), client.getIp(), receiver->getNickname(), data[1]));
 	return (client.send_error(INVITESENDER(client.getNickname(), data[2], data[1])));
 }
@@ -146,7 +145,6 @@ std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 			{
 				if (refChann->findClientByNick(client.getNickname(), refChann->getList()) == NULL)
 				{
-					refChann->print(client.getNickname(), refChann->getList(), "check sortie");
 					client.send_error(ERR_INVITEONLYCHAN(*it));
 					continue ;
 				}
@@ -247,7 +245,7 @@ std::string	Server::checkNick(Client &client, std::deque<std::string> list_arg)
 		client.setStatus(true);
 		return (client.send_error(AUTHENTIFICATED(client.getNickname())));
 	}
-	return (client.send_error(CHANGENICKNAME(client.getNickname()))); //TODO Verify
+	return (client.send_error(CHANGENICKNAME(client.getNickname())));
 }
 
 std::string	Server::checkPrivmsg(Client &client, std::deque<std::string> data)
@@ -337,7 +335,7 @@ std::string	Server::checkMode(Client &client, std::deque<std::string> data)
 	}
 	return ("");
 }
-//TODO i l or mode no params
+
 void	Server::execMode(Client &client, std::deque<std::string> data, size_t &i, char token, char mode, Channel &channel)
 {
 	if (mode == 'i')

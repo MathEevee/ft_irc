@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/26 15:01:37 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/27 14:20:49 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,8 +50,6 @@ void	Server::checkDeleteChannel(void)
 	}
 }
 
-//TODO +l
-
 void	Server::joinChannel(Client &client, Channel &channel) const
 {
 	if (channel.getModeL() == true)
@@ -61,6 +59,8 @@ void	Server::joinChannel(Client &client, Channel &channel) const
 		else
 			client.send_error(ERR_CHANNELISFULL(client.getNickname(), channel.getName()));
 	}
+	if (channel.findClientByNick(client.getNickname(), channel.getAllClient()) != NULL)
+		client.send_error(ERR_USERONCHANNEL(client.getNickname(), channel.getName()));
 	else
 		channel.addClient(client);
 }
@@ -184,7 +184,6 @@ Client*	Server::findClientByNick(std::string recipient)
 	}
 	return (NULL);
 }
-//TODO test remove if disconnected
 void	Server::leaveAllChannel(Client &client)
 {
 	std::vector<Channel> &channels = this->getListChannel();
@@ -241,7 +240,7 @@ void	Server::read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_cl
 	for (std::vector<Client*>::iterator it = this->_client_list.begin(); it != this->_client_list.end() - new_client;)
 	{
 		std::string	message = (*it)->getMessage();
-
+	
 		if ((fds[i].revents & POLLIN) != 0)
 		{
 			do
@@ -322,7 +321,11 @@ void	Server::commands_parsing(Client &client, std::string input)
 		checkTopic(client, list_arg);
 	else if (list_arg[0] == "INVITE")
 		checkInvite(client, list_arg);
-	//TODO else command not found
+	else if (list_arg[0] != "WHO")
+	{
+		std::string	msg = ERR_UNKNOWNCOMMAND(client.getNickname(), list_arg[0]);
+		send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
+	}
 }
 
 Server::Server(int port, std::string password)

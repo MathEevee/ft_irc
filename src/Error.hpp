@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 12:16:46 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/26 14:26:10 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/27 13:52:58 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,9 +55,7 @@
 # define CHANGEDTOPIC(nameSender, userNameSender, ipSender, channel, topic) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " TOPIC " + channel + " " + topic + "\r\n"
 
 # define INVITE(nameReceiver, userNameReceiver, ipReceiver, invited, channel) ":" + nameReceiver + "!" + userNameReceiver + "@" + ipReceiver + " INVITE " + invited + " :" + channel + "\r\n" //(receiver)
-//  :matde-ol!~matde-ol@rtr.23.90.210.20.unyc.it INVITE matde_ :#matde-ol (invitation to the invited = matde_)
 # define INVITESENDER(nameSender, invited, channel) ":127.0.0.1 341 " + nameSender + " " + invited + " " + channel + "\r\n"
-// :irc.choopa.net 341 matde-ol matde_ #matde-ol (sender = matde-ol)
 
 # define KICK(nameReceiver, userNameReceiver, ipReceiver, userKicked, channel, msg) ":" + nameReceiver + "!" + userNameReceiver + "@" + ipReceiver + " KICK " + channel + " " + userKicked + msg + "\r\n" //(receiver)
 
@@ -70,6 +68,10 @@
 # define CHANNELLIST(name, channel, msg) ":127.0.0.1 353 " + name + " @ " + channel + " :" + msg + "\r\n"
 
 
-# define MSGOP(nameSender, userNameSender, ipSender, channel, msg, Op) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " MODE " + channel + " " + msg + " " + Op + "\r\n"
+# define MSGPARAM(nameSender, userNameSender, ipSender, channel, msg, param) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " MODE " + channel + " " + msg + " " + param + "\r\n"
+// :calcium.libera.chat 421 matde-ol SADSOJDSOJDSALDSJA :Unknown command
+# define ERR_UNKNOWNCOMMAND(name, cmd) ":127.0.0.1 421 " + name + " " + cmd + " :Unknown command\r\n"
+
+// :matde-ol!~matde-ol@rtr.23.90.210.20.unyc.it MODE #matde-ol +k salut
 
 #endif
