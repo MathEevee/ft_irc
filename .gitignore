@@ -1,4 +1,6 @@
+.vscode/*
 *.o
 ircserv
 ircserv_bonus
 bot
+.vscode/settings.json
