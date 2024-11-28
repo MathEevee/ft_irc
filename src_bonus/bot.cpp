@@ -6,11 +6,18 @@
 /*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/27 16:19:34 by ede-lang          #+#    #+#             */
-/*   Updated: 2024/11/27 17:15:52 by ede-lang         ###   ########.fr       */
+/*   Updated: 2024/11/28 12:12:15 by ede-lang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "bot.hpp"
+
+int signal_num;
+
+void	handler(int num)
+{
+	signal_num = num;
+}
 
 bot::bot(std::string name, unsigned int port, std::string pass)
 : _name(name), _port(port), _password(pass)
@@ -30,6 +37,7 @@ bool bot::connectServer()
 	char	buffer[1024];
 	size_t	size;
 
+	signal_num = 0;
 	msg = PASS(this->_password); 
 	send(this->getBotSocket(), msg.c_str(), msg.size(), 0);
 	size = recv(this->getBotSocket(), buffer, sizeof(buffer) - 1, 0);
@@ -47,26 +55,70 @@ bool bot::connectServer()
 	size = recv(this->getBotSocket(), buffer, sizeof(buffer) - 1, 0);
 	buffer[size] = 0;
 	std::cout << buffer << std::endl;
+
+	std::string channel = "#salut";
+	msg = JOIN(channel);
+	send(this->getBotSocket(), msg.c_str(), msg.size(), 0);
+	size = recv(this->getBotSocket(), buffer, sizeof(buffer) - 1, 0);
+	buffer[size] = 0;
+	std::cout << buffer << std::endl;
 	return (true);
 }
+
 void bot::runtime()
 {
 	ssize_t size;
 	char	buffer[1024];
 	bot::connectServer();
+	std::string message = "";
+	std::deque<std::string> list_arg;
 
-	while (1)
+
+	signal(SIGINT, handler);
+
+	while (signal_num != SIGINT)
 	{
-		size = recv(this->getBotSocket(), buffer, sizeof(buffer) - 1, 0);
-		if (size > 0)
+		do
 		{
-			std::cout << buffer << std::endl;
+			size = recv(this->getBotSocket(), buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
+			if (size == -1)
+				break;
+			if (size == 0)
+			{
+				close(this->getBotSocket());
+				return ;
+			}
+			buffer[size] = 0;
+			message = message + buffer;
+		} while (size == 1024);
+		if (message != "")
+		{
+			std::cout << message <<std::endl;
+			list_arg = splitCommand(message);
+			if (list_arg[1] == "PRIVMSG")
+			{
+				this->send_msg(list_arg);
+			}
 		}
-
+		message = "";
 	}
 }
-
 
 //GETTERS
 int	bot::getBotSocket() const { return (this->_bot_socket);}
 
+bool bot::send_msg(std::deque<std::string> list_arg)
+{
+	std::string dest;
+	std::string msg;
+
+	if (list_arg[2][0] == '#')
+		dest = list_arg[2];
+	else
+		dest = list_arg[0].substr(1, list_arg[0].find('!') - 1);
+	
+	msg = list_arg[1] + " " + dest + " : Do you know I'm a bot ? \r\n";
+	send(this->getBotSocket(), msg.c_str(), msg.size(), 0);
+	
+	return (true);
+}

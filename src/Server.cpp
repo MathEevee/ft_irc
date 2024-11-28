@@ -6,7 +6,7 @@
 /*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/27 17:31:07 by ede-lang         ###   ########.fr       */
+/*   Updated: 2024/11/28 11:26:47 by ede-lang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -303,13 +303,13 @@ void	Server::commands_parsing(Client &client, std::string input)
 		checkUser(client, list_arg);
 	else if (list_arg[0] == "NICK")
 		checkNick(client, list_arg);
-	if (client.getStatus() == false || client.getNickname().size() == 0 || client.getUsername().size() == 0)
+	else if (client.getStatus() == false || client.getNickname().size() == 0 || client.getUsername().size() == 0)
 	{
 		std::string	msg = NOTAUTHENTIFICATED;
 		send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
 		return ;
 	}
-	if (list_arg[0] == "PRIVMSG")
+	else if (list_arg[0] == "PRIVMSG")
 		checkPrivmsg(client, list_arg);
 	else if (list_arg[0] == "JOIN")
 		checkJoin(client, list_arg);
@@ -323,6 +323,7 @@ void	Server::commands_parsing(Client &client, std::string input)
 		checkInvite(client, list_arg);
 	else if (list_arg[0] != "WHO" && client.getNickname().size() != 0 && client.getUsername().size() != 0)
 	{
+		std::cout << client.getNickname() << std::endl;
 		std::string	msg = ERR_UNKNOWNCOMMAND(client.getNickname(), list_arg[0]);
 		send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
 	}

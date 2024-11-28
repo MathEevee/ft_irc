@@ -6,7 +6,7 @@
 #    By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/06/04 14:46:49 by ede-lang          #+#    #+#              #
-#    Updated: 2024/11/27 17:21:05 by ede-lang         ###   ########.fr        #
+#    Updated: 2024/11/28 11:43:39 by ede-lang         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,7 +19,7 @@ NAME	:= ircserv
 NAME_B	:= bot
 CC		:= c++
 SRCS 	:= main.cpp Channel.cpp Client.cpp Server.cpp ServerCommand.cpp
-SRCS_B 	:= main.cpp bot.cpp
+SRCS_B 	:= main.cpp bot.cpp bot.utils.cpp
 OBJS	:= $(addprefix $(OBJDIR)/, $(SRCS:.cpp=.o))
 OBJSB	:= $(addprefix $(OBJDIRB)/, $(SRCS_B:.cpp=.o))
 

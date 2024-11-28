@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerCommand.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/11/27 13:49:19 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/28 09:47:15 by ede-lang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -221,6 +221,9 @@ std::string	Server::checkUser(Client& client, std::deque<std::string> data)
 std::string	Server::checkNick(Client &client, std::deque<std::string> list_arg)
 {
 
+	if (client.getStatus() == false)
+		return (client.send_error(NOTAUTHENTIFICATED));
+
 	if (list_arg.size() == 1 || list_arg[1] == "")
 		return (client.send_error(ERR_NONICKNAMEGIVEN));
 
@@ -233,19 +236,15 @@ std::string	Server::checkNick(Client &client, std::deque<std::string> list_arg)
 	if (client.getNickname().size() == 0)
 	{
 		client.setNickname(list_arg[1]);
-		return (client.send_error(SELECTNICKNAME(client.getNickname())));		
+		if (client.getUsername().size() != 0)
+		{
+			return (client.send_error(AUTHENTIFICATED(client.getNickname())));
+		}
+		return (client.send_error(SELECTNICKNAME(client.getNickname())));	
 	}
-
-	if (client.getStatus() == true)
-		this->sendToAllClient(client, list_arg[1]);
-
+	this->sendToAllClient(client, list_arg[1]);
 	client.setNickname(list_arg[1]);
-	if (client.getUsername().size() != 0 && client.getStatus() == false)
-	{
-		client.setStatus(true);
-		return (client.send_error(AUTHENTIFICATED(client.getNickname())));
-	}
-	return (client.send_error(CHANGENICKNAME(client.getNickname())));
+	return ("");
 }
 
 std::string	Server::checkPrivmsg(Client &client, std::deque<std::string> data)
