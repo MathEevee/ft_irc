@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerCommand.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
+/*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/11/29 12:45:11 by ede-lang         ###   ########.fr       */
+/*   Updated: 2024/11/29 16:54:09 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,14 +141,6 @@ std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 		else
 		{
 			Channel	*refChann = this->findChannel(*it);
-			if (refChann->getModeI() == true)
-			{
-				if (refChann->findClientByNick(client.getNickname(), refChann->getList()) == NULL)
-				{
-					client.send_msg(ERR_INVITEONLYCHAN(*it));
-					continue ;
-				}
-			}
 			if (refChann->getModeK() == true)
 			{
 				if (i >= list_password.size() || refChann->getPassword() != list_password[i])
@@ -159,8 +151,6 @@ std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 				}
 				i++;
 			}
-			if (refChann->findClientByNick(*it, refChann->getList()) != NULL)
-				refChann->deleteClient(client, refChann->getList());
 			this->joinChannel(client, *refChann);
 		}
 	}

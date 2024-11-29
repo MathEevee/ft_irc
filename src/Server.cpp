@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
+/*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/29 12:49:14 by ede-lang         ###   ########.fr       */
+/*   Updated: 2024/11/29 16:54:56 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,15 +54,25 @@ void	Server::joinChannel(Client &client, Channel &channel) const
 {
 	if (channel.getModeL() == true)
 	{
-		if (channel.getAllClient().size() < channel.getNbrClient())
-			channel.addClient(client);
-		else
+		if (channel.getAllClient().size() >= channel.getNbrClient())
+		{
 			client.send_msg(ERR_CHANNELISFULL(client.getNickname(), channel.getName()));
+			return ;
+		}
 	}
 	if (channel.findClientByNick(client.getNickname(), channel.getAllClient()) != NULL)
+	{
 		client.send_msg(ERR_USERONCHANNEL(client.getNickname(), channel.getName()));
+		return;
+	}
+	if (channel.getModeI() == true && channel.findClientByNick(client.getNickname(), channel.getList()) != NULL)
+		channel.deleteClient(client, channel.getList());
 	else
-		channel.addClient(client);
+	{
+		client.send_msg(ERR_INVITEONLYCHAN(channel.getName()));
+		return ;
+	}
+	channel.addClient(client);
 }
 
 void	Server::sendToAllClient(Client &client, std::string new_nickname)
