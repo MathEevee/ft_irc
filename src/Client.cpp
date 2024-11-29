@@ -6,13 +6,13 @@
 /*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 17:47:20 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/27 15:51:53 by ede-lang         ###   ########.fr       */
+/*   Updated: 2024/11/29 12:45:11 by ede-lang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
-std::string	Client::send_error(std::string msg_error)
+std::string	Client::send_msg(std::string msg_error)
 {
 	send(this->getSocketFd(), msg_error.c_str(), msg_error.size(), 0);
 	return (msg_error);

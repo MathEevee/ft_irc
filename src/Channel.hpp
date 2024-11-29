@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:21:48 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/06 12:44:45 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/29 12:45:34 by ede-lang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 # include <deque>
 # include "Client.hpp"
 # include "Server.hpp"
-# include "Error.hpp"
+# include "Define.hpp"
 
 class Channel
 {

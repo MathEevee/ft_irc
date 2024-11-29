@@ -6,7 +6,7 @@
 /*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/27 16:19:34 by ede-lang          #+#    #+#             */
-/*   Updated: 2024/11/28 12:12:15 by ede-lang         ###   ########.fr       */
+/*   Updated: 2024/11/29 12:41:53 by ede-lang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,37 +31,39 @@ bot::bot(std::string name, unsigned int port, std::string pass)
 
 bot::~bot() {}
 
-bool bot::connectServer()
+bool bot::exchangemsg(std::string msg)
 {
-	std::string msg;
 	char	buffer[1024];
 	size_t	size;
 
+	send(this->getBotSocket(), msg.c_str(), msg.size(), 0);
+	if(signal_num == SIGPIPE)
+		return (false);
+	size = recv(this->getBotSocket(), buffer, sizeof(buffer) - 1, 0);
+	buffer[size] = 0;
+	std::cout << buffer << std::endl;
+	return (true);
+}
+
+bool bot::connectServer()
+{
+	signal(SIGPIPE, handler);
+
 	signal_num = 0;
-	msg = PASS(this->_password); 
-	send(this->getBotSocket(), msg.c_str(), msg.size(), 0);
-	size = recv(this->getBotSocket(), buffer, sizeof(buffer) - 1, 0);
-	buffer[size] = 0;
-	std::cout << buffer << std::endl;	
 
-	msg = USER(this->_name);
-	send(this->getBotSocket(), msg.c_str(), msg.size(), 0);
-	size = recv(this->getBotSocket(), buffer, sizeof(buffer) - 1, 0);
-	buffer[size] = 0;
-	std::cout << buffer << std::endl;
+	if (!exchangemsg(PASS(this->_password)))
+		return (false);
 
-	msg = NICK(this->_name);
-	send(this->getBotSocket(), msg.c_str(), msg.size(), 0);
-	size = recv(this->getBotSocket(), buffer, sizeof(buffer) - 1, 0);
-	buffer[size] = 0;
-	std::cout << buffer << std::endl;
-
+	if (!exchangemsg(USER(this->_name)))
+		return (false);
+	
+	if (!exchangemsg(NICK(this->_name)))
+		return (false);
+	
 	std::string channel = "#salut";
-	msg = JOIN(channel);
-	send(this->getBotSocket(), msg.c_str(), msg.size(), 0);
-	size = recv(this->getBotSocket(), buffer, sizeof(buffer) - 1, 0);
-	buffer[size] = 0;
-	std::cout << buffer << std::endl;
+	if (!exchangemsg(JOIN(channel)))
+		return (false);
+
 	return (true);
 }
 
@@ -69,25 +71,21 @@ void bot::runtime()
 {
 	ssize_t size;
 	char	buffer[1024];
-	bot::connectServer();
+	if (!bot::connectServer())
+		return ;
 	std::string message = "";
 	std::deque<std::string> list_arg;
 
 
 	signal(SIGINT, handler);
 
-	while (signal_num != SIGINT)
+	while (signal_num != SIGINT && signal_num != SIGPIPE)
 	{
 		do
 		{
 			size = recv(this->getBotSocket(), buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
 			if (size == -1)
 				break;
-			if (size == 0)
-			{
-				close(this->getBotSocket());
-				return ;
-			}
 			buffer[size] = 0;
 			message = message + buffer;
 		} while (size == 1024);

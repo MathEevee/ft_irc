@@ -6,7 +6,7 @@
 /*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/27 16:17:26 by ede-lang          #+#    #+#             */
-/*   Updated: 2024/11/28 11:55:12 by ede-lang         ###   ########.fr       */
+/*   Updated: 2024/11/29 12:52:34 by ede-lang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ class bot
 		int	getBotSocket() const;
 		bool send_msg(std::deque<std::string> list_arg);
 		bool connectServer();
+		bool exchangemsg(std::string msg);
 };
 
 //////////////////////////////////////////////////////////////
@@ -52,14 +53,5 @@ class bot
 //////////////////////////////////////////////////////////////
 
 std::deque<std::string>	splitCommand(std::string input);
-
-// :matde-ol!ede-lang@0.0.0.0 PRIVMSG Astro :salut
-
-//PRIVMSG #salut :test
-//PRIVMSG Astro :salut
-
-// search first space -> PRIVMSG Astro :salut
-
-//if # check param 3
 
 #endif

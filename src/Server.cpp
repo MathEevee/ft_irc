@@ -6,7 +6,7 @@
 /*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/28 11:26:47 by ede-lang         ###   ########.fr       */
+/*   Updated: 2024/11/29 12:49:14 by ede-lang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,10 +57,10 @@ void	Server::joinChannel(Client &client, Channel &channel) const
 		if (channel.getAllClient().size() < channel.getNbrClient())
 			channel.addClient(client);
 		else
-			client.send_error(ERR_CHANNELISFULL(client.getNickname(), channel.getName()));
+			client.send_msg(ERR_CHANNELISFULL(client.getNickname(), channel.getName()));
 	}
 	if (channel.findClientByNick(client.getNickname(), channel.getAllClient()) != NULL)
-		client.send_error(ERR_USERONCHANNEL(client.getNickname(), channel.getName()));
+		client.send_msg(ERR_USERONCHANNEL(client.getNickname(), channel.getName()));
 	else
 		channel.addClient(client);
 }
@@ -89,7 +89,7 @@ std::string Server::sendToChannel(Client &sender, std::string channel, std::stri
 	std::string	msg = MSGSEND(sender.getNickname(), sender.getUsername(), sender.getIp(), channel, msgToSend);
 
 	if (this->findChannel(channel) == NULL)
-		return (sender.send_error(ERR_NOSUCHNICK(sender.getNickname(), channel)));
+		return (sender.send_msg(ERR_NOSUCHNICK(sender.getNickname(), channel)));
 
 	this->findChannel(channel)->sendAllClientMsg(sender, msg);
 	return ("");
@@ -100,7 +100,7 @@ std::string Server::sendToClient(Client &sender, std::string receiver, std::stri
 	std::string	msg = MSGSEND(sender.getNickname(), sender.getUsername(), sender.getIp(), receiver, msgToSend);
 	
 	if (this->findClientByNick(receiver) == NULL)
-		return (sender.send_error(ERR_NOSUCHNICK(sender.getNickname(), receiver)));
+		return (sender.send_msg(ERR_NOSUCHNICK(sender.getNickname(), receiver)));
 	send(this->findClientByNick(receiver)->getSocketFd(), msg.c_str(), msg.size(), 0);
 	return ("");
 }
@@ -187,6 +187,8 @@ Client*	Server::findClientByNick(std::string recipient)
 void	Server::leaveAllChannel(Client &client)
 {
 	std::vector<Channel> &channels = this->getListChannel();
+	if (channels.size() == 0)
+		return;
 	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); it++)
 	{
 		it->removeClient(client);
@@ -206,7 +208,7 @@ bool	Server::add_client()
 		if (this->_client_list.size() >= NB_MAX_CLIENTS)
 		{
 			close(clientSocket);
-			std::cout << "Too many clients.\r" << std::endl;
+			return (false);
 		}
 		else
 		{
@@ -214,7 +216,6 @@ bool	Server::add_client()
 			inet_ntop(AF_INET, &addr, ip, INET_ADDRSTRLEN);
 			Client	*new_client = new Client(clientSocket, ip);
 			this->_client_list.push_back(new_client);
-			std::cout << "New client connected.\r" << std::endl;
 			return (true);
 		}
 	}
@@ -266,8 +267,11 @@ void	Server::read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_cl
 			it++;
 		else
 		{
-			this->leaveAllChannel(**it);
-			this->checkDeleteChannel();
+			if (this->getListChannel().size() != 0)
+			{
+				this->leaveAllChannel(**it);
+				this->checkDeleteChannel();
+			}
 			this->sendToAll(**it);
 			delete (*it);
 			it = this->_client_list.erase(it);
@@ -323,7 +327,6 @@ void	Server::commands_parsing(Client &client, std::string input)
 		checkInvite(client, list_arg);
 	else if (list_arg[0] != "WHO" && client.getNickname().size() != 0 && client.getUsername().size() != 0)
 	{
-		std::cout << client.getNickname() << std::endl;
 		std::string	msg = ERR_UNKNOWNCOMMAND(client.getNickname(), list_arg[0]);
 		send(client.getSocketFd(), msg.c_str(), msg.size(), 0);
 	}

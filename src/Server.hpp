@@ -6,7 +6,7 @@
 /*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:25:59 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/27 16:35:37 by ede-lang         ###   ########.fr       */
+/*   Updated: 2024/11/29 12:46:11 by ede-lang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@
 # include <iomanip>
 # include <string>
 # include <ctime>
-# include "Error.hpp"
+# include "Define.hpp"
 # include "Channel.hpp"
 
 class Client;

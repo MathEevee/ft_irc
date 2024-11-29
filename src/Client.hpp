@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 18:36:54 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/02 11:13:35 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/29 12:45:11 by ede-lang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ class Client
 		bool		_disconnected;
 
 	public :
-		std::string		send_error(std::string msg_error);
+		std::string		send_msg(std::string msg_error);
 
 		Client();
 		Client(int socket_fd, std::string ip);

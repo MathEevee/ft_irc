@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:32:23 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/27 13:42:19 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/11/29 12:45:11 by ede-lang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 std::string	Channel::addOp(Client &client, std::deque<std::string> data, size_t &i)
 {
 	if (i >= data.size())
-		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
+		return (client.send_msg(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 
 	std::deque<std::string>	list_user = parsingMultiArgs(data[i]);
 	for (std::deque<std::string>::iterator it = list_user.begin(); it != list_user.end(); it++)
@@ -28,10 +28,10 @@ std::string	Channel::addOp(Client &client, std::deque<std::string> data, size_t 
 				this->getClientOp().push_back(findClientByNick(*it, this->getAllClient()));
 			}
 			else
-				client.send_error(ERR_CHANALREADYOP(client.getNickname(), *it));
+				client.send_msg(ERR_CHANALREADYOP(client.getNickname(), *it));
 		}
 		else
-			client.send_error(ERR_NOSUCHNICK(client.getNickname(), *it));
+			client.send_msg(ERR_NOSUCHNICK(client.getNickname(), *it));
 	}
 	i++;
 	return ("");
@@ -40,7 +40,7 @@ std::string	Channel::addOp(Client &client, std::deque<std::string> data, size_t 
 std::string	Channel::removeOp(Client &client, std::deque<std::string> data, size_t &i)
 {
 	if (i >= data.size())
-		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
+		return (client.send_msg(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 
 	std::deque<std::string>	list_user = parsingMultiArgs(data[i]);
 	for (std::deque<std::string>::iterator it = list_user.begin(); it != list_user.end(); it++)
@@ -53,10 +53,10 @@ std::string	Channel::removeOp(Client &client, std::deque<std::string> data, size
 				this->deleteClient(*findClientByNick(*it, this->getAllClient()), this->getClientOp());
 			}
 			else
-				client.send_error(ERR_NOSUCHNICK(client.getNickname(), *it));
+				client.send_msg(ERR_NOSUCHNICK(client.getNickname(), *it));
 		}
 		else
-			client.send_error(ERR_NOSUCHNICK(client.getNickname(), *it));
+			client.send_msg(ERR_NOSUCHNICK(client.getNickname(), *it));
 	}
 	i++;
 	return ("");
@@ -121,7 +121,7 @@ std::string	Channel::execModeL(Client &client, std::deque<std::string> data, siz
 	if (token == '+')
 	{
 		if (i >= data.size())
-			return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
+			return (client.send_msg(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 		if (std::atoll(data[i].c_str()) <= 0)
 			return ("");
 		this->setModeL(true);
@@ -135,17 +135,6 @@ std::string	Channel::execModeL(Client &client, std::deque<std::string> data, siz
 		return (sendAllClient(client, CHANNELMODEJOIN(this->getName(), "-l")));
 	}
 	return ("");
-}
-//TODO remove
-void	Channel::print(std::string sender, std::deque<Client*> &list, std::string msg)
-{
-	std::cout << sender << " : " << msg << std::endl;
-	for (std::deque<Client*>::iterator it = list.begin(); it != list.end(); it++)
-	{
-		std::cout << "nick name = " << (*it)->getNickname() << std::endl;	
-	}
-	std::cout << std::endl;
-	std::cout << std::endl;
 }
 
 Client*	Channel::findClientByNick(std::string sender, std::deque<Client*> &list)

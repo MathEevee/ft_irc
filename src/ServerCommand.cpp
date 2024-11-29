@@ -6,7 +6,7 @@
 /*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/11/28 09:47:15 by ede-lang         ###   ########.fr       */
+/*   Updated: 2024/11/29 12:45:11 by ede-lang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void	Server::kick(Client &client, Channel &channel, std::string target, std::str
 		channel.deleteClient(*findClientByNick(target), channel.getClientOp());
 	}
 	channel.deleteClient(*kicked, channel.getAllClient());
-	kicked->send_error(KICK(client.getNickname(), client.getUsername(), client.getIp(), target, channel.getName(), msg));
+	kicked->send_msg(KICK(client.getNickname(), client.getUsername(), client.getIp(), target, channel.getName(), msg));
 	channel.sendAllClient(client, KICK(client.getNickname(), client.getUsername(), client.getIp(), target, channel.getName(), msg));
 	this->checkDeleteChannel();
 
@@ -32,9 +32,9 @@ void	Server::kick(Client &client, Channel &channel, std::string target, std::str
 std::string	Server::checkKick(Client &client, std::deque<std::string> data)
 {
 	if (data.size() < 3)
-		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
+		return (client.send_msg(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 	else if (data.size() > 4)
-		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
+		return (client.send_msg(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
 	
 	std::string	msg = " ";
 	if (data.size() == 4)
@@ -60,23 +60,23 @@ std::string	Server::checkKick(Client &client, std::deque<std::string> data)
 		Channel *channel = this->findChannel(*it);
 		if (channel == NULL)
 		{
-			client.send_error(ERR_NOSUCHCHANNEL(*it));
+			client.send_msg(ERR_NOSUCHCHANNEL(*it));
 			continue;
 		}
 		if (channel->findClientByNick(client.getNickname(), channel->getAllClient()) == NULL)
 		{
-			client.send_error(ERR_NOTONCHANNEL(client.getNickname(), channel->getName()));
+			client.send_msg(ERR_NOTONCHANNEL(client.getNickname(), channel->getName()));
 			continue;
 		}
 		if (channel->findClientByNick(client.getNickname(), channel->getClientOp()) == NULL)
 		{
-			client.send_error(ERR_CHANNOTOPSNEEDED(client.getNickname(), channel->getName()));
+			client.send_msg(ERR_CHANNOTOPSNEEDED(client.getNickname(), channel->getName()));
 			continue;
 		}
 		for (std::deque<std::string>::iterator target = clients.begin(); target != clients.end(); target++)
 		{
 			if (channel->findClientByNick(*target, channel->getAllClient()) == NULL)
-				client.send_error(ERR_NOTONCHANNEL(client.getNickname(), *target));
+				client.send_msg(ERR_NOTONCHANNEL(client.getNickname(), *target));
 			else
 				kick(client, *channel, *target, msg);
 		}
@@ -88,40 +88,40 @@ std::string	Server::checkKick(Client &client, std::deque<std::string> data)
 std::string	Server::checkInvite(Client &client, std::deque<std::string> data)
 {
 	if (data.size() == 1)
-		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
+		return (client.send_msg(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 	else if (data.size() > 3)
-		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
+		return (client.send_msg(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
 	
 	if (this->findClientByNick(data[2]) == NULL)
-		return (client.send_error(ERR_NOSUCHNICK(client.getNickname(), data[2])));
+		return (client.send_msg(ERR_NOSUCHNICK(client.getNickname(), data[2])));
 	
 	Channel *channel = this->findChannel(data[1]);
 
 	if (channel == NULL)
-		return (client.send_error(ERR_NOSUCHCHANNEL(data[1])));
+		return (client.send_msg(ERR_NOSUCHCHANNEL(data[1])));
 
 	if (channel->findClientByNick(client.getNickname(), this->findChannel(data[1])->getAllClient()) == NULL)
-		return (client.send_error(ERR_NOTONCHANNEL(client.getNickname(), data[1])));
+		return (client.send_msg(ERR_NOTONCHANNEL(client.getNickname(), data[1])));
 
 	if (channel->findClientByNick(client.getNickname(), this->findChannel(data[1])->getClientOp()) == NULL)
-		return (client.send_error(ERR_CHANNOTOPSNEEDED(client.getNickname(), data[1])));
+		return (client.send_msg(ERR_CHANNOTOPSNEEDED(client.getNickname(), data[1])));
 
 	if (channel->findClientByNick(data[2], this->findChannel(data[1])->getAllClient()) != NULL)
-		return (client.send_error(ERR_USERONCHANNEL(client.getNickname(), data[1])));
+		return (client.send_msg(ERR_USERONCHANNEL(client.getNickname(), data[1])));
 
 	Client *receiver = this->findClientByNick(data[2]);
 
 	channel->getList().push_back(receiver);
-	receiver->send_error(INVITE(client.getNickname(), client.getUsername(), client.getIp(), receiver->getNickname(), data[1]));
-	return (client.send_error(INVITESENDER(client.getNickname(), data[2], data[1])));
+	receiver->send_msg(INVITE(client.getNickname(), client.getUsername(), client.getIp(), receiver->getNickname(), data[1]));
+	return (client.send_msg(INVITESENDER(client.getNickname(), data[2], data[1])));
 }
 
 std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 {
 	if (data.size() == 1)
-		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
+		return (client.send_msg(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 	else if (data.size() > 3)
-		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
+		return (client.send_msg(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
 	
 	std::deque<std::string> list_channel = parsingMultiArgs(data[1]);
 	std::deque<std::string> list_password;
@@ -135,7 +135,7 @@ std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 		if (this->findChannel(*it) == NULL)
 		{
 			if ((*it)[0] != '#')
-				return (client.send_error(ERR_NOSUCHCHANNEL(*it)));
+				return (client.send_msg(ERR_NOSUCHCHANNEL(*it)));
 			this->createChannel(client, *it);
 		}
 		else
@@ -145,7 +145,7 @@ std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 			{
 				if (refChann->findClientByNick(client.getNickname(), refChann->getList()) == NULL)
 				{
-					client.send_error(ERR_INVITEONLYCHAN(*it));
+					client.send_msg(ERR_INVITEONLYCHAN(*it));
 					continue ;
 				}
 			}
@@ -153,7 +153,7 @@ std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 			{
 				if (i >= list_password.size() || refChann->getPassword() != list_password[i])
 				{
-					client.send_error(ERR_BADCHANNELKEY(*it));
+					client.send_msg(ERR_BADCHANNELKEY(*it));
 					i++;
 					continue ;
 				}
@@ -171,10 +171,16 @@ std::string	Server::checkJoin(Client &client, std::deque<std::string> data)
 std::string	Server::checkPass(Client &client, std::deque<std::string> password)
 {
 	if (password.size() == 1)
-		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), password[0])));
+	{
+		client.setDisconnected(true);
+		return (client.send_msg(ERR_NEEDMOREPARAMS(client.getNickname(), password[0])));
+	}
 
 	if (password.size() > 2)
-		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), password[0])));
+	{
+		client.setDisconnected(true);
+		return (client.send_msg(ERR_TOOMANYPARAMS(client.getNickname(), password[0])));
+	}
 
 	if (password.size() == 2 && this->getPassword() == password[1] && client.getStatus() == 0)
 	{
@@ -182,28 +188,29 @@ std::string	Server::checkPass(Client &client, std::deque<std::string> password)
 		return ("");
 	}
 	else if (client.getStatus() == 1)
-		return (client.send_error(ERR_ALREADYREGISTRED));
+		return (client.send_msg(ERR_ALREADYREGISTRED));
 
-	return (client.send_error(ERR_PASSWDMISMATCH));
+	client.setDisconnected(true);
+	return (client.send_msg(ERR_PASSWDMISMATCH));
 }
 
 std::string	Server::checkUser(Client& client, std::deque<std::string> data)
 {
 	if (client.getRealName() != "")
-		return (client.send_error(ERR_ALREADYREGISTRED));
+		return (client.send_msg(ERR_ALREADYREGISTRED));
 
 	if (data.size() < 5)
-		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
+		return (client.send_msg(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 	else if (data.size() > 5)
-		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
+		return (client.send_msg(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
 
 	if (client.getUsername().size() != 0)
-			return (client.send_error(ERR_ALREADYREGISTRED));
+			return (client.send_msg(ERR_ALREADYREGISTRED));
 
 	for (std::deque<std::string>::iterator it = data.begin(); it != data.end(); it++)
 	{
 		if ((*it).find('@') != std::string::npos || (*it).find('#') != std::string::npos)
-			return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
+			return (client.send_msg(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
 	}
 
 	client.setUsername(data[1]);
@@ -212,35 +219,33 @@ std::string	Server::checkUser(Client& client, std::deque<std::string> data)
 		client.setStatus(true);
 	if (client.getUsername().size() != 0 && client.getNickname().size() != 0)
 	{
-		client.send_error(SELECTUSER(client.getUsername()));
-		return (client.send_error(AUTHENTIFICATED(client.getNickname())));
+		client.send_msg(SELECTUSER(client.getUsername()));
+		return (client.send_msg(AUTHENTIFICATED(client.getNickname())));
 	}
-	return (client.send_error(SELECTUSER(client.getUsername())));
+	return (client.send_msg(SELECTUSER(client.getUsername())));
 }
 
 std::string	Server::checkNick(Client &client, std::deque<std::string> list_arg)
 {
 
 	if (client.getStatus() == false)
-		return (client.send_error(NOTAUTHENTIFICATED));
+		return (client.send_msg(NOTAUTHENTIFICATED));
 
 	if (list_arg.size() == 1 || list_arg[1] == "")
-		return (client.send_error(ERR_NONICKNAMEGIVEN));
+		return (client.send_msg(ERR_NONICKNAMEGIVEN));
 
 	if (this->findClientByNick(list_arg[1]) != NULL)
-		return (client.send_error(ERR_NICKNAMEINUSE(list_arg[1])));
+		return (client.send_msg(ERR_NICKNAMEINUSE(list_arg[1])));
 
 	if (list_arg[1].find('@') != std::string::npos || list_arg[1].find('#') != std::string::npos)
-		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), list_arg[1])));
+		return (client.send_msg(ERR_TOOMANYPARAMS(client.getNickname(), list_arg[1])));
 
 	if (client.getNickname().size() == 0)
 	{
 		client.setNickname(list_arg[1]);
 		if (client.getUsername().size() != 0)
-		{
-			return (client.send_error(AUTHENTIFICATED(client.getNickname())));
-		}
-		return (client.send_error(SELECTNICKNAME(client.getNickname())));	
+			return (client.send_msg(AUTHENTIFICATED(client.getNickname())));
+		return (client.send_msg(SELECTNICKNAME(client.getNickname())));	
 	}
 	this->sendToAllClient(client, list_arg[1]);
 	client.setNickname(list_arg[1]);
@@ -255,11 +260,11 @@ std::string	Server::checkPrivmsg(Client &client, std::deque<std::string> data)
 
 	receiver.pop_front();
 	if (receiver.size() == 0)
-		return (client.send_error(ERR_NORECIPIENT(data[0])));
+		return (client.send_msg(ERR_NORECIPIENT(data[0])));
 	else if (receiver.size() == 1)
-		return (client.send_error(ERR_NOTEXTTOSEND));
+		return (client.send_msg(ERR_NOTEXTTOSEND));
 	else if (receiver.size() > 2)
-		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
+		return (client.send_msg(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
 
 	receiver = parsingMultiArgs(data[1]);
 	msg_to_send = data[data.size() - 1];
@@ -277,24 +282,24 @@ std::string	Server::checkPrivmsg(Client &client, std::deque<std::string> data)
 std::string	Server::checkTopic(Client &client, std::deque<std::string> data)
 {
 	if (data.size() < 2)
-		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
+		return (client.send_msg(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 
 	if (this->findChannel(data[1]) == NULL)
-		return (client.send_error(ERR_NOSUCHCHANNEL(data[1])));
+		return (client.send_msg(ERR_NOSUCHCHANNEL(data[1])));
 
 	if (this->findChannel(data[1])->findClientByNick(client.getNickname(), this->findChannel(data[1])->getAllClient()) == NULL)
-		return (client.send_error(ERR_NOTONCHANNEL(client.getNickname(),data[1])));
+		return (client.send_msg(ERR_NOTONCHANNEL(client.getNickname(),data[1])));
 	
 	if (data.size() == 2)
 	{
 		if (this->findChannel(data[1])->getTopic().size() == 0)
-			return (client.send_error(RPL_NOTOPIC(data[1])));
+			return (client.send_msg(RPL_NOTOPIC(data[1])));
 		else
-			return (client.send_error(RPL_TOPIC(client.getNickname(), data[1], this->findChannel(data[1])->getTopic())));
+			return (client.send_msg(RPL_TOPIC(client.getNickname(), data[1], this->findChannel(data[1])->getTopic())));
 	}
 
 	if (data.size() > 3)
-		return (client.send_error(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
+		return (client.send_msg(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
 
 	if (data[2][0] != ':')
 	{
@@ -311,22 +316,22 @@ std::string	Server::checkMode(Client &client, std::deque<std::string> data)
 	char	token = '+';
 
 	if (data.size() < 2)
-		return (client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
+		return (client.send_msg(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
 
 	if (this->findChannel(data[1]) == NULL)
-		return (client.send_error(ERR_NOSUCHCHANNEL(data[1])));
+		return (client.send_msg(ERR_NOSUCHCHANNEL(data[1])));
 
 	if (data.size() == 2)
-		return (client.send_error(CHANNELMODE(client.getNickname(), this->findChannel(data[1])->getName(), this->findChannel(data[1])->getAllMode())));
+		return (client.send_msg(CHANNELMODE(client.getNickname(), this->findChannel(data[1])->getName(), this->findChannel(data[1])->getAllMode())));
 	
 	if (this->findChannel(data[1])->findClientByNick(client.getNickname(), this->findChannel(data[1])->getClientOp()) == NULL)
-		return (client.send_error(ERR_CHANNOTOPSNEEDED(client.getNickname(), data[1])));
+		return (client.send_msg(ERR_CHANNOTOPSNEEDED(client.getNickname(), data[1])));
 
 	size_t	i = 3;
 	for (std::string::iterator it = data[2].begin(); it != data[2].end(); it++)
 	{
 		if (this->findChannel(data[1])->findClientByNick(client.getNickname(), this->findChannel(data[1])->getClientOp()) == NULL)
-			return (client.send_error(ERR_CHANNOTOPSNEEDED(client.getNickname(), data[1])));
+			return (client.send_msg(ERR_CHANNOTOPSNEEDED(client.getNickname(), data[1])));
 		if (*it == '-' || *it == '+')
 			token = *it;
 		else
@@ -344,7 +349,7 @@ void	Server::execMode(Client &client, std::deque<std::string> data, size_t &i, c
 	else if (mode == 'l')
 		channel.execModeL(client, data, i, token);
 	else if (data.size() < i && token == '+')
-		client.send_error(ERR_NEEDMOREPARAMS(client.getNickname(), data[0]));
+		client.send_msg(ERR_NEEDMOREPARAMS(client.getNickname(), data[0]));
 	else if (mode == 'k')
 		channel.execModeK(client, data, i, token);
 	else if (mode == 'o')
@@ -355,5 +360,5 @@ void	Server::execMode(Client &client, std::deque<std::string> data, size_t &i, c
 			channel.addOp(client, data, i);
 	}
 	else
-		client.send_error(ERR_UNKNOWNMODE(client.getNickname(), mode));
+		client.send_msg(ERR_UNKNOWNMODE(client.getNickname(), mode));
 }
