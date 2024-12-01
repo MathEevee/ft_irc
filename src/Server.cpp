@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/29 16:54:56 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/12/01 17:10:17 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ void	Server::joinChannel(Client &client, Channel &channel) const
 	}
 	if (channel.getModeI() == true && channel.findClientByNick(client.getNickname(), channel.getList()) != NULL)
 		channel.deleteClient(client, channel.getList());
-	else
+	else if (channel.getModeI() == true)
 	{
 		client.send_msg(ERR_INVITEONLYCHAN(channel.getName()));
 		return ;

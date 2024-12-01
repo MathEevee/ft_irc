@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
+/*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:21:48 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/29 12:45:34 by ede-lang         ###   ########.fr       */
+/*   Updated: 2024/12/01 17:09:23 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,9 +77,6 @@ class Channel
 		std::string				sendAllClient(Client &sender, std::string msg);
 		std::string				sendAllClientMsg(Client &sender, std::string msg);
 		Client*					findClientByNick(std::string sender, std::deque<Client*> &list);
-
-		void					print(std::string sender, std::deque<Client*> &list, std::string msg);
-
 
 		std::string				execModeI(Client &client, char token);
 		std::string				execModeT(Client &client, char token);

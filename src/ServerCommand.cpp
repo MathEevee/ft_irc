@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/11/29 16:54:09 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/12/01 16:54:05 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -338,7 +338,7 @@ void	Server::execMode(Client &client, std::deque<std::string> data, size_t &i, c
 		channel.execModeT(client, token);
 	else if (mode == 'l')
 		channel.execModeL(client, data, i, token);
-	else if (data.size() < i && token == '+')
+	else if (data.size() <= i && token == '+')
 		client.send_msg(ERR_NEEDMOREPARAMS(client.getNickname(), data[0]));
 	else if (mode == 'k')
 		channel.execModeK(client, data, i, token);

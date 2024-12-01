@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
+/*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 17:32:23 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/29 12:45:11 by ede-lang         ###   ########.fr       */
+/*   Updated: 2024/12/01 17:00:21 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,13 +69,13 @@ std::string Channel::execModeI(Client &client, char token)
 		if (this->getModeI() == true)
 			return ("");
 		this->setModeI(true);
-		return (sendAllClient(client, CHANNELMODEJOIN(this->getName(), "+i")));
+		return (sendAllClient(client, MSGPARAM(client.getNickname(), client.getUsername(), client.getIp(), this->getName(), "+i", "")));
 	}
 	else if (this->getModeI() == true && token == '-')
 	{
 		this->setModeI(false);
 		this->getList().clear();
-		return (sendAllClient(client, CHANNELMODEJOIN(this->getName(), "-i")));
+		return (sendAllClient(client, MSGPARAM(client.getNickname(), client.getUsername(), client.getIp(), this->getName(), "-i", "")));
 	}
 	return ("");
 }
@@ -85,12 +85,12 @@ std::string Channel::execModeT(Client &client, char token)
 	if (token == '+')
 	{
 		this->setModeT(true);
-		return (sendAllClient(client, CHANNELMODEJOIN(this->getName(), "+t")));
+		return (sendAllClient(client, MSGPARAM(client.getNickname(), client.getUsername(), client.getIp(), this->getName(), "+t", "")));
 	}
 	else if (this->getModeT() == true && token == '-')
 	{
 		this->setModeT(false);
-		return (sendAllClient(client, CHANNELMODEJOIN(this->getName(), "-t")));
+		return (sendAllClient(client, MSGPARAM(client.getNickname(), client.getUsername(), client.getIp(), this->getName(), "-t", "")));
 	}
 	return ("");
 }
@@ -109,7 +109,7 @@ std::string Channel::execModeK(Client &client, std::deque<std::string> data, siz
 	{
 		this->setModeK(false);
 		this->setPassword("");
-		return (sendAllClient(client, CHANNELMODEJOIN(this->getName(), "-k")));
+		return (sendAllClient(client, MSGPARAM(client.getNickname(), client.getUsername(), client.getIp(), this->getName(), "-k", "")));
 	}
 	else if (this->getModeK() == true && token == '+')
 		return (sendAllClient(client, ERR_KEYSET(client.getNickname(), this->getName())));
@@ -132,7 +132,7 @@ std::string	Channel::execModeL(Client &client, std::deque<std::string> data, siz
 	{
 		this->setModeL(false);
 		this->setNbrClient(0);
-		return (sendAllClient(client, CHANNELMODEJOIN(this->getName(), "-l")));
+		return (sendAllClient(client, MSGPARAM(client.getNickname(), client.getUsername(), client.getIp(), this->getName(), "-l", "")));
 	}
 	return ("");
 }
