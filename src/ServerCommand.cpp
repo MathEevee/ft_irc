@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/12/02 16:16:09 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/12/02 17:15:45 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,8 +112,10 @@ std::string	Server::checkPart(Client &client, std::deque<std::string> data)
 				channel->deleteClient(*findClientByNick(client.getNickname()), channel->getClientOp());
 			}
 			std::string msg = "";
-			if (data[2][0] != ':')
-				msg = " :" + data[2];
+			if (data.size() == 2)
+				msg = ":Leave";
+			else if (data[2][0] != ':')
+				msg = ":" + data[2];
 			else
 				msg += data[2];
 			channel->sendAllClient(client, LEAVE(client.getNickname(), client.getUsername(), client.getIp(), channel->getName(), msg));

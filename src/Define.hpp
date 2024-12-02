@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 12:16:46 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/12/02 16:08:10 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/12/02 17:15:43 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,5 @@
 
 # define MSGPARAM(nameSender, userNameSender, ipSender, channel, msg, param) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " MODE " + channel + " " + msg + " " + param + "\r\n"
 # define ERR_UNKNOWNCOMMAND(name, cmd) ":127.0.0.1 421 " + name + " " + cmd + " :Unknown command\r\n"
-
-// :matde-ol2!~matde-ol2@rtr.23.90.210.20.unyc.it MODE #matde-ol -ilt
 
 #endif
