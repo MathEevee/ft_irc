@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 22:58:11 by mbriand           #+#    #+#             */
-/*   Updated: 2024/12/01 16:54:05 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/12/02 16:16:09 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ void	Server::kick(Client &client, Channel &channel, std::string target, std::str
 	kicked->send_msg(KICK(client.getNickname(), client.getUsername(), client.getIp(), target, channel.getName(), msg));
 	channel.sendAllClient(client, KICK(client.getNickname(), client.getUsername(), client.getIp(), target, channel.getName(), msg));
 	this->checkDeleteChannel();
-
 }
 
 
@@ -83,6 +82,47 @@ std::string	Server::checkKick(Client &client, std::deque<std::string> data)
 	}
 	return ("");
 }
+
+std::string	Server::checkPart(Client &client, std::deque<std::string> data)
+{
+	if (data.size() == 1)
+		return (client.send_msg(ERR_NEEDMOREPARAMS(client.getNickname(), data[0])));
+	else if (data.size() > 3)
+		return (client.send_msg(ERR_TOOMANYPARAMS(client.getNickname(), data[0])));
+
+	std::deque<std::string>	channel = parsingMultiArgs(data[1]);
+	for (std::deque<std::string>::iterator it = channel.begin(); it != channel.end(); it++)
+	{
+		Channel *channel = this->findChannel(*it);
+		if (channel == NULL)
+		{
+			client.send_msg(ERR_NOSUCHCHANNEL(*it));
+			continue;
+		}
+		else if (channel->findClientByNick(client.getNickname(), channel->getAllClient()) == NULL)
+		{
+			client.send_msg(ERR_NOTONCHANNEL(client.getNickname(), channel->getName()));
+			continue;
+		}
+		else
+		{
+			if (channel->findClientByNick(client.getNickname(), channel->getClientOp()) != NULL)
+			{
+				channel->sendAllClient(client, MSGPARAM(client.getNickname(), client.getUsername(), client.getIp(), channel->getName(), "-o", client.getNickname()));
+				channel->deleteClient(*findClientByNick(client.getNickname()), channel->getClientOp());
+			}
+			std::string msg = "";
+			if (data[2][0] != ':')
+				msg = " :" + data[2];
+			else
+				msg += data[2];
+			channel->sendAllClient(client, LEAVE(client.getNickname(), client.getUsername(), client.getIp(), channel->getName(), msg));
+			channel->deleteClient(client, channel->getAllClient());
+		}
+	}
+	return ("");
+}
+
 
 
 std::string	Server::checkInvite(Client &client, std::deque<std::string> data)

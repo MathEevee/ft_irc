@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ede-lang <ede-lang@student.42.fr>          +#+  +:+       +#+        */
+/*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:25:59 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/11/29 12:46:11 by ede-lang         ###   ########.fr       */
+/*   Updated: 2024/12/02 15:51:38 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@ class Server
 		std::string	checkInvite(Client &client, std::deque<std::string> data);
 		std::string	checkTopic(Client &client, std::deque<std::string> data);
 		std::string	checkKick(Client &client, std::deque<std::string> data);
+		std::string	checkPart(Client &client, std::deque<std::string> data);
 
 		void		kick(Client &client, Channel &channel, std::string target, std::string msg);
 

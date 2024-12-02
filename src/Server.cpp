@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 14:26:06 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/12/01 17:10:17 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/12/02 16:19:00 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,6 +270,7 @@ void	Server::read_all_clients(struct pollfd fds[NB_MAX_CLIENTS + 1], bool new_cl
 			} while (size == 1024);
 
 			this->process_commands(**it);
+			this->checkDeleteChannel();
 		}
 		i++;
 
@@ -335,6 +336,8 @@ void	Server::commands_parsing(Client &client, std::string input)
 		checkTopic(client, list_arg);
 	else if (list_arg[0] == "INVITE")
 		checkInvite(client, list_arg);
+	else if (list_arg[0] == "PART")
+		checkPart(client, list_arg);
 	else if (list_arg[0] != "WHO" && client.getNickname().size() != 0 && client.getUsername().size() != 0)
 	{
 		std::string	msg = ERR_UNKNOWNCOMMAND(client.getNickname(), list_arg[0]);

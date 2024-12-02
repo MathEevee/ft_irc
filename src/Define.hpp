@@ -6,7 +6,7 @@
 /*   By: matde-ol <matde-ol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 12:16:46 by matde-ol          #+#    #+#             */
-/*   Updated: 2024/12/01 16:52:45 by matde-ol         ###   ########.fr       */
+/*   Updated: 2024/12/02 16:08:10 by matde-ol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@
 # define INVITESENDER(nameSender, invited, channel) ":127.0.0.1 341 " + nameSender + " " + invited + " " + channel + "\r\n"
 
 # define KICK(nameReceiver, userNameReceiver, ipReceiver, userKicked, channel, msg) ":" + nameReceiver + "!" + userNameReceiver + "@" + ipReceiver + " KICK " + channel + " " + userKicked + msg + "\r\n"
+# define LEAVE(nameReceiver, userNameReceiver, ipReceiver, channel, msg) ":" + nameReceiver + "!" + userNameReceiver + "@" + ipReceiver + " PART " + channel + " " + msg + "\r\n"
 
 # define ERR_UNKNOWNMODE(name, char) ":127.0.0.1 472 " + name + " " + char + " :is unknown mode char to me\r\n"
 # define ERR_NOTONCHANNEL(name, channel) ":127.0.0.1 442 " + name + " " + channel + " :You're not on that channel\r\n"
@@ -71,6 +72,6 @@
 # define MSGPARAM(nameSender, userNameSender, ipSender, channel, msg, param) ":" + nameSender + "!" + userNameSender + "@" + ipSender + " MODE " + channel + " " + msg + " " + param + "\r\n"
 # define ERR_UNKNOWNCOMMAND(name, cmd) ":127.0.0.1 421 " + name + " " + cmd + " :Unknown command\r\n"
 
-// :matde-ol2!~matde-ol2@rtr.23.90.210.20.unyc.it MODE #matde-ol -ilt 
+// :matde-ol2!~matde-ol2@rtr.23.90.210.20.unyc.it MODE #matde-ol -ilt
 
 #endif
