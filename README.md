@@ -7,9 +7,14 @@ Pour se connecter :
 - Lancer nc -> nc 127.0.0.1
 - Commencer les commandes :
   
-\-\> PASS \<password\>\n
-\-\> NICK \<nickname\>\n
+\-\> PASS \<password\>
+
+
+\-\> NICK \<nickname\>
+
+
 \-\> USER \<name\> 0 * \<othername\>
+
 
 *PASS*
 -Permet d'être authentifier par le serveur et permet par la suite de créer l'utilisateur
