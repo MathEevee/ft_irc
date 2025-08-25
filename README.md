@@ -5,7 +5,8 @@ Pour lancer le programme :
 Pour se connecter :
 
 - Lancer nc -> nc 127.0.0.1
-- Commencer les commandes : \n
+- Commencer les commandes :
+  
 \-\> PASS \<password\>\n
 \-\> NICK \<nickname\>\n
 \-\> USER \<name\> 0 * \<othername\>
