@@ -55,5 +55,6 @@ Liste des commandes :
 *JOIN*
 
 -Permet de rejoindre un salon ou de le créer si il n'existe pas:
-  -"Join #myChannel" Si il existe déjà, on peut ajouter des options comme un mot de passe pour le rejoindre si c'est demandé
+
+    -"Join #myChannel" Si il existe déjà, on peut ajouter des options comme un mot de passe pour le rejoindre si c'est demandé
 
