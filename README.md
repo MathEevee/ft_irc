@@ -31,12 +31,19 @@ Pour se connecter :
 Liste des commandes :
 
 -PRIVMSG
+
 -JOIN
+
 -MODE
+
 -KICK
+
 -TOPIC
+
 -INVITE
+
 -PART
+
 -WHO
 
 *PRIVMSG*
