@@ -68,4 +68,20 @@ PRIVMSG #general Hello tout le monde !
 ## 📌 Notes
 
 - Les commandes doivent respecter la **syntaxe IRC**.  
-- Certaines fonctionnalités dépendent du client utilisé (ex : HexChat).  
+- Certaines fonctionnalités dépendent du client utilisé (ex : HexChat).
+
+---
+
+## ⭐ Bonus
+1. **Compiler** le programme :
+   ```bash
+   make bonus
+   ```
+   (dans le dossier où se situe le `Makefile`)
+
+2. **Exécuter** le serveur :
+   ```bash
+   ./bot <name_bot> <port> <password>
+   ```
+
+---
