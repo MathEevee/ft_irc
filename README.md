@@ -49,7 +49,9 @@ Liste des commandes :
 *PRIVMSG*
 
 -Si on écrit :
+
   -"PRIVMSG #<NameOfChannel> <message>" alors on l'envoie sur un channel/salon
+  
   -"PRIVMSG <User> <message>" alors on l'envoie à un utilisateur en privé
 
 *JOIN*
