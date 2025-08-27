@@ -1,62 +1,71 @@
-Pour lancer le programme :
--Compiler le programme -> make dans le dossier où se situe le Makefile
--Lancer avec -> ./ircserv <port> <password>
+# IRC Server
 
-Pour se connecter :
+Petit serveur IRC avec gestion des commandes de base.
 
-- Lancer nc -> nc 127.0.0.1
-- Commencer les commandes :
-  
-\-\> PASS \<password\>
+---
 
+## 🚀 Lancer le programme
 
-\-\> NICK \<nickname\>
+1. **Compiler** le programme :
+   ```bash
+   make
+   ```
+   (dans le dossier où se situe le `Makefile`)
 
+2. **Exécuter** le serveur :
+   ```bash
+   ./ircserv <port> <password>
+   ```
 
-\-\> USER \<name\> 0 * \<othername\>
+---
 
+## 🔗 Connexion
 
-*PASS*
+1. Lancer **netcat** :
+   ```bash
+   nc 127.0.0.1 <port>
+   ```
 
--Permet d'être authentifier par le serveur et permet par la suite de créer l'utilisateur
+2. Envoyer les commandes d’authentification dans l’ordre :
+   ```text
+   PASS <password>
+   NICK <nickname>
+   USER <name> 0 * <othername>
+   ```
 
-*NICK*
+---
 
--Enregistrer son nickname.
+## 📝 Commandes supportées
 
-*USER*
+| Commande   | Description | Exemple |
+|------------|-------------|---------|
+| **PASS**   | Authentifie l’utilisateur auprès du serveur. | `PASS mypassword` |
+| **NICK**   | Définit le pseudonyme de l’utilisateur. | `NICK Alice` |
+| **USER**   | Enregistre un nom unique (ou second nom selon le client). | `USER Alice 0 * AliceClient` |
+| **PRIVMSG**| Envoie un message privé à un utilisateur ou sur un channel. | `PRIVMSG Bob Salut !`<br>`PRIVMSG #general Hello !` |
+| **JOIN**   | Rejoint ou crée un salon. Peut nécessiter un mot de passe. | `JOIN #myChannel` |
+| **MODE**   | Change le mode d’un utilisateur ou d’un salon. | `MODE #general +i` |
+| **KICK**   | Expulse un utilisateur d’un salon. | `KICK #general Bob :Raison` |
+| **TOPIC**  | Définit ou affiche le sujet du salon. | `TOPIC #general :Nouveau sujet` |
+| **INVITE** | Invite un utilisateur dans un salon. | `INVITE Bob #general` |
+| **PART**   | Quitte un salon. | `PART #general` |
+| **WHO**    | Liste les utilisateurs connectés ou dans un salon. | `WHO #general` |
 
--Enregistrer un nom unique ou un second nom suivant les clients, la commande donnée et celle pour les paramètres par défaut de Hexchat.
+---
 
-Liste des commandes :
+## ✅ Exemple d’utilisation
 
--PRIVMSG
+```text
+PASS mypassword
+NICK Alice
+USER Alice 0 * AliceClient
+JOIN #general
+PRIVMSG #general Hello tout le monde !
+```
 
--JOIN
+---
 
--MODE
+## 📌 Notes
 
--KICK
-
--TOPIC
-
--INVITE
-
--PART
-
--WHO
-
-*PRIVMSG*
-
--Si on écrit :
-
-  -"PRIVMSG #<NameOfChannel> <message>" alors on l'envoie sur un channel/salon
-  
-  -"PRIVMSG <User> <message>" alors on l'envoie à un utilisateur en privé
-
-*JOIN*
-
--Permet de rejoindre un salon ou de le créer si il n'existe pas:
-
-   -"Join #myChannel" Si il existe déjà, on peut ajouter des options comme un mot de passe pour le rejoindre si c'est demandé
-
+- Les commandes doivent respecter la **syntaxe IRC**.  
+- Certaines fonctionnalités dépendent du client utilisé (ex : HexChat).  
