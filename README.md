@@ -84,4 +84,11 @@ PRIVMSG #general Hello tout le monde !
    ./bot <name_bot> <port> <password>
    ```
 
+## Résultat :
+   Le bot crée son propre utilisateur et se connecte au serveur avec les informations mises en argument.
+
+   Il crée aussi son propre channel/salon.
+
+   On peut lui envoyer un message sur le channel/salon ou en privé et il nous répond.
+
 ---
